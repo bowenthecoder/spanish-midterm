@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#4255ff">
+<title>Spanish Midterm</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#282e3e;--muted:#646f90;--brand:#4255ff;--brand2:#e8ebff;--good:#18ae79;--goodbg:#e6f8f1;--bad:#e2453c;--badbg:#fdecea;--line:#d9dde8;--r:16px;--sh:0 2px 12px rgba(40,46,62,.08)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 48px}
+header{display:flex;align-items:center;gap:8px;margin-bottom:12px;min-height:40px}
+header h1{font-size:20px;margin:0;flex:1}
+header .x{background:none;font-size:20px;color:var(--muted);padding:6px 8px}
+header .muted{font-size:14px;font-weight:600}
+h2{font-size:17px;margin:22px 0 10px}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;color:inherit}
+.btn{background:var(--brand);color:#fff;padding:14px 18px;font-weight:600}
+.btn.ghost{background:var(--card);color:var(--ink);border:2px solid var(--line)}
+.btn.good{background:var(--good)}
+.btn.bad{background:var(--card);color:var(--bad);border:2px solid var(--bad)}
+.link{background:none;color:var(--brand);font-weight:600;padding:8px 0}
+.muted{color:var(--muted)}.center{text-align:center}
+.panel{background:var(--card);border-radius:var(--r);padding:18px;box-shadow:var(--sh)}
+.between{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:var(--good);border-radius:99px;transition:width .4s}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.mode{background:var(--card);padding:18px;text-align:left;border-radius:var(--r);box-shadow:var(--sh);border:2px solid transparent;display:flex;flex-direction:column;gap:6px}
+.mode:hover{border-color:var(--brand)}
+.mode .ic{font-size:28px}.mode b{font-size:18px}.mode small{color:var(--muted)}
+.seg{display:flex;background:var(--line);padding:4px;border-radius:12px;gap:4px}
+.seg button{flex:1;padding:10px;background:none;color:var(--muted);font-weight:600;border-radius:9px}
+.seg button.on{background:var(--card);color:var(--brand);box-shadow:var(--sh)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--card);border:2px solid var(--line);padding:8px 12px;border-radius:99px;font-size:14px}
+.chip small{color:var(--muted);margin-left:4px}
+.chip.on{border-color:var(--brand);background:var(--brand2);color:var(--brand)}
+.flip{position:relative;height:300px;perspective:1200px;margin:16px 0;cursor:pointer;user-select:none;-webkit-user-select:none}
+.flip .inner{position:absolute;inset:0;transition:transform .45s;transform-style:preserve-3d}
+.flip.on .inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border-radius:var(--r);box-shadow:0 4px 18px rgba(40,46,62,.12);display:flex;align-items:center;justify-content:center;padding:28px;text-align:center}
+.face.b{transform:rotateY(180deg)}
+.face .txt{font-size:clamp(22px,5vw,32px);font-weight:600}
+.hint{position:absolute;bottom:12px;left:0;right:0;color:var(--muted);font-size:13px}
+.spk{position:absolute;top:12px;right:12px;background:var(--brand2);width:44px;height:44px;border-radius:50%;font-size:20px}
+.spk.inline{position:static;width:34px;height:34px;font-size:15px;vertical-align:middle;margin-left:6px}
+.sort{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.keys{font-size:13px;margin-top:14px}
+.q{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:var(--sh);margin:16px 0;position:relative}
+.q .label{color:var(--muted);font-size:14px;font-weight:600;margin-bottom:12px}
+.q .txt{font-size:clamp(20px,4.5vw,26px);font-weight:600;padding-right:48px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{background:var(--card);border:2px solid var(--line);padding:14px;text-align:left;display:flex;gap:12px;align-items:center;min-height:62px}
+.opt:hover:not(:disabled){border-color:var(--brand)}
+.opt .n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-size:13px;color:var(--muted)}
+.opt.right{border-color:var(--good);background:var(--goodbg)}
+.opt.wrong{border-color:var(--bad);background:var(--badbg)}
+.opt.dim{opacity:.45}
+.foot{min-height:64px;margin-top:16px}
+.inp{width:100%;font:inherit;font-size:20px;padding:14px 16px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);outline:none}
+.inp:focus{border-color:var(--brand)}
+.acc{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ak{background:var(--card);border:2px solid var(--line);width:40px;height:40px;font-size:18px;border-radius:10px}
+.wf .between{margin-top:12px}
+.res{border-radius:var(--r);padding:16px;display:grid;gap:10px}
+.res.good{background:var(--goodbg);color:#0d6e4c}
+.res.bad{background:var(--badbg)}
+.res s{color:var(--bad)}
+.big{font-size:48px}
+.stack{display:flex;flex-direction:column;gap:10px;max-width:320px;margin:16px auto 0}
+.review{list-style:none;padding:0;margin:16px 0}
+.review li{background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:grid;gap:2px;border-left:4px solid var(--line)}
+.review li.ok{border-left-color:var(--good)}.review li.no{border-left-color:var(--bad)}
+.review span{color:var(--muted)}.review i{font-size:12px;color:var(--muted);font-style:normal}
+@media(max-width:560px){.opts,.modes{grid-template-columns:1fr}.flip{height:260px}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const RAW = "# Greetings\nHola\tHello\nBuenos días\tGood morning\nBuenas tardes\tGood afternoon\nBuenas noches\tGood evening / Good night\n¿Cómo estás?\tHow are you? (informal)\n¿Cómo está usted?\tHow are you? (formal)\n¿Qué tal?\tHow's it going?\nEstoy bien, gracias. ¿Y tú?\tI'm fine, thanks. And you?\nMás o menos\tSo-so\nMucho gusto\tNice to meet you\nIgualmente\tLikewise\nAdiós\tGoodbye\nHasta luego\tSee you later\nHasta mañana\tSee you tomorrow\nPor favor\tPlease\nGracias / De nada\tThank you / You're welcome\nLo siento\tI'm sorry\nPerdón / Con permiso\tExcuse me\n# Introducing yourself\n¿Cómo te llamas?\tWhat's your name?\nMe llamo...\tMy name is...\n¿De dónde eres?\tWhere are you from?\nSoy de...\tI'm from...\n¿Cuántos años tienes?\tHow old are you?\nTengo veinte años.\tI'm 20 years old.\n¿Dónde vives?\tWhere do you live?\nVivo en...\tI live in...\nSoy estudiante.\tI'm a student.\nEstudio negocios en la universidad.\tI study business at the university.\n# Question words\n¿Qué?\tWhat?\n¿Quién? / ¿Quiénes?\tWho?\n¿Dónde?\tWhere?\n¿Adónde?\tTo where?\n¿Cuándo?\tWhen?\n¿Cómo?\tHow?\n¿Por qué?\tWhy?\nPorque\tBecause\n¿Cuánto? / ¿Cuántos?\tHow much? / How many?\n¿Cuál?\tWhich? / What?\n# Numbers\ncero, uno, dos, tres, cuatro, cinco\t0, 1, 2, 3, 4, 5\nseis, siete, ocho, nueve, diez\t6, 7, 8, 9, 10\nonce, doce, trece, catorce, quince\t11, 12, 13, 14, 15\ndieciséis, diecisiete, dieciocho, diecinueve, veinte\t16, 17, 18, 19, 20\ntreinta, cuarenta, cincuenta\t30, 40, 50\nsesenta, setenta, ochenta, noventa, cien\t60, 70, 80, 90, 100\n# Days, months & dates\nlunes, martes, miércoles\tMonday, Tuesday, Wednesday\njueves, viernes, sábado, domingo\tThursday, Friday, Saturday, Sunday\n¿Qué día es hoy? Hoy es lunes.\tWhat day is today? Today is Monday.\nenero, febrero, marzo, abril\tJanuary, February, March, April\nmayo, junio, julio, agosto\tMay, June, July, August\nseptiembre, octubre, noviembre, diciembre\tSeptember, October, November, December\n¿Cuál es la fecha? Es el 21 de octubre.\tWhat's the date? It's October 21.\nhoy / mañana / ayer\ttoday / tomorrow / yesterday\nla semana / el fin de semana\tthe week / the weekend\n# Telling time\n¿Qué hora es?\tWhat time is it?\nEs la una.\tIt's 1:00.\nSon las dos y media.\tIt's 2:30.\nSon las tres y cuarto.\tIt's 3:15.\nSon las cinco menos diez.\tIt's 4:50.\nA las ocho de la mañana\tAt 8 in the morning\nde la tarde / de la noche\tin the afternoon / at night\n# Weather\n¿Qué tiempo hace?\tWhat's the weather like?\nHace calor / Hace frío\tIt's hot / It's cold\nHace sol / Hace viento\tIt's sunny / It's windy\nHace buen tiempo / Hace mal tiempo\tThe weather is nice / bad\nLlueve / Nieva\tIt's raining / It's snowing\nEstá nublado\tIt's cloudy\n# Family\nla familia\tfamily\nel padre / la madre\tfather / mother\nlos padres\tparents\nel hermano / la hermana\tbrother / sister\nel hijo / la hija\tson / daughter\nel abuelo / la abuela\tgrandfather / grandmother\nel tío / la tía\tuncle / aunt\nel primo / la prima\tcousin (m/f)\nel esposo / la esposa\thusband / wife\nel novio / la novia\tboyfriend / girlfriend\nel amigo / la amiga\tfriend (m/f)\nel perro / el gato\tdog / cat\nTengo dos hermanos.\tI have two siblings.\n# Adjectives & feelings\nalto / bajo\ttall / short\ngrande / pequeño\tbig / small\nsimpático / antipático\tnice / mean\ninteligente\tsmart\ntrabajador / perezoso\thardworking / lazy\nguapo / bonito / feo\thandsome / pretty / ugly\njoven / viejo\tyoung / old\nrubio / moreno\tblond / dark-haired\ndivertido / aburrido\tfun / boring\nfácil / difícil\teasy / hard\nbueno / malo\tgood / bad\ncontento / triste\thappy / sad\ncansado\ttired\nenojado\tangry\nnervioso\tnervous\nenfermo\tsick\nocupado\tbusy\n# Ser, estar & verb charts\nSER — when to use\tPermanent traits, who/what, origin, job, time (Soy alto. Soy de Boston.)\nESTAR — when to use\tFeelings and location (Estoy cansado. Estoy en casa.)\nser: yo / tú / él / nosotros / ellos\tsoy / eres / es / somos / son\nestar: yo / tú / él / nosotros / ellos\testoy / estás / está / estamos / están\ntener: yo / tú / él / nosotros / ellos\ttengo / tienes / tiene / tenemos / tienen\nir: yo / tú / él / nosotros / ellos\tvoy / vas / va / vamos / van\nhablar (-ar): yo / tú / él / nosotros / ellos\thablo / hablas / habla / hablamos / hablan\ncomer (-er): yo / tú / él / nosotros / ellos\tcomo / comes / come / comemos / comen\nvivir (-ir): yo / tú / él / nosotros / ellos\tvivo / vives / vive / vivimos / viven\n# Common verbs\nhablar\tto speak\nestudiar\tto study\ntrabajar\tto work\ntomar\tto take / to drink\ncomprar\tto buy\nescuchar\tto listen\nbailar / cantar\tto dance / to sing\nnecesitar\tto need\nllegar\tto arrive\ncomer / beber\tto eat / to drink\nleer\tto read\naprender\tto learn\ncorrer\tto run\nvivir\tto live\nescribir\tto write\nhacer (yo hago)\tto do / to make\nquerer (quiero)\tto want\npoder (puedo)\tto be able to / can\nsalir (yo salgo)\tto leave / go out\n# Gustar & sentence patterns\nMe gusta el café.\tI like coffee. (one thing)\nMe gustan los perros.\tI like dogs. (plural)\nMe gusta bailar.\tI like to dance. (verb)\n¿Te gusta...?\tDo you like...?\nA él / ella le gusta...\tHe / She likes...\nNo me gusta...\tI don't like...\nVoy a estudiar.\tI'm going to study. (ir a + verb)\nTengo que trabajar.\tI have to work. (tener que + verb)\nQuiero comer.\tI want to eat.\nPuedo ir mañana.\tI can go tomorrow.\nHay\tThere is / There are\nHay tres libros en la mesa.\tThere are three books on the table.\n# School & places\nla clase\tclass\nel profesor / la profesora\tprofessor (m/f)\nel libro / el cuaderno\tbook / notebook\nel lápiz / el bolígrafo\tpencil / pen\nla mochila\tbackpack\nla mesa / la silla\ttable / chair\nla computadora\tcomputer\nla tarea\thomework\nel examen\texam\nla biblioteca\tlibrary\nla cafetería\tcafeteria\nel gimnasio\tgym\nla residencia\tdorm\nla casa\thouse / home\nel restaurante\trestaurant\nla tienda\tstore\nel parque\tpark\nla playa\tbeach\n# Food\nel agua / el café / la leche\twater / coffee / milk\nel jugo\tjuice\nel pan\tbread\nla fruta / la manzana\tfruit / apple\nel pollo / la carne / el pescado\tchicken / meat / fish\nla ensalada / el arroz\tsalad / rice\nel desayuno / el almuerzo / la cena\tbreakfast / lunch / dinner\nQuisiera un café, por favor.\tI would like a coffee, please.\nLa cuenta, por favor.\tThe check, please.\n# Colors\nrojo / azul / verde\tred / blue / green\namarillo / anaranjado / morado\tyellow / orange / purple\nnegro / blanco / gris\tblack / white / gray\nrosado / marrón\tpink / brown\n# Classroom phrases\n¿Cómo se dice ___ en español?\tHow do you say ___ in Spanish?\n¿Qué significa ___?\tWhat does ___ mean?\nNo entiendo.\tI don't understand.\nMás despacio, por favor.\tSlower, please.\nRepita, por favor.\tRepeat, please.\nTengo una pregunta.\tI have a question.\n# Grammar basics\nel / la / los / las\tthe (m / f / m plural / f plural)\nun / una / unos / unas\ta / an / some\nmi / tu / su\tmy / your / his-her-their\nNo + verb\tNegation: No hablo francés. = I don't speak French.\n# Practice sentences\nMi madre es simpática y trabajadora.\tMy mom is nice and hardworking.\nMis amigos son divertidos.\tMy friends are fun.\nEstoy muy cansado hoy.\tI'm very tired today.\nLa biblioteca está cerca de la cafetería.\tThe library is near the cafeteria.\nLos lunes estudio en la biblioteca.\tOn Mondays I study in the library.\nTrabajo los fines de semana.\tI work on weekends.\nComo el almuerzo a la una.\tI eat lunch at one.\nHoy hace frío y está nublado.\tToday it's cold and cloudy.\nMi cumpleaños es el 5 de mayo.\tMy birthday is May 5.\nMi clase favorita es español.\tMy favorite class is Spanish.\nEste fin de semana voy a ir a la playa.\tThis weekend I'm going to go to the beach.\n¿Quieres ir al café conmigo?\tDo you want to go to the café with me?\n";
+// Grammar cards read oddly when flipped, so they always show the Spanish side first.
+const FIXED = ['Ser, estar & verb charts', 'Grammar basics'];
+const DECK = [], SECTIONS = [];
+{let sec = ''; for (const line of RAW.split('\n')) {
+  if (!line.trim()) continue;
+  if (line.startsWith('# ')) { sec = line.slice(2).trim(); SECTIONS.push(sec); continue; }
+  const [es, en] = line.split('\t');
+  DECK.push({id: es, es, en, sec, fixed: FIXED.includes(sec)});
+}}
+
+const KEY = 'es-midterm-v1';
+const S = Object.assign({dir: 'es-en', secs: [], lv: {}}, JSON.parse(localStorage.getItem(KEY) || '{}'));
+S.secs = S.secs.filter(s => SECTIONS.includes(s));
+const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+const lk = c => S.dir + '|' + c.id;
+const level = c => S.lv[lk(c)] || 0; // 0 new, 1 multiple choice right, 2 typed right = mastered
+const setLevel = (c, n) => { S.lv[lk(c)] = n; save(); };
+const selected = () => S.secs.length ? DECK.filter(c => S.secs.includes(c.sec)) : DECK;
+const esFirst = c => S.dir === 'es-en' || c.fixed;
+const P = c => esFirst(c) ? c.es : c.en;
+const A = c => esFirst(c) ? c.en : c.es;
+
+const app = document.getElementById('app');
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const once = fn => { let done = false; return (...x) => { if (!done) { done = true; fn(...x); } }; };
+const praise = () => ['¡Muy bien!', '¡Excelente!', '¡Perfecto!', 'Nice!', 'Great job!'][Math.random() * 5 | 0];
+const spk = (t, cls = '') => `<button class="spk ${cls}" data-say="${esc(t)}" aria-label="Listen">🔊</button>`;
+const topBar = (title, right = '') => `<header><button class="x" data-home aria-label="Home">✕</button><h1>${title}</h1><span class="muted">${right}</span></header>`;
+let screen = 0, onKey = null;
+
+document.addEventListener('keydown', e => { if (onKey && !e.metaKey && !e.ctrlKey && !e.altKey) onKey(e); });
+document.addEventListener('click', e => {
+  const s = e.target.closest('.spk');
+  if (s) { e.stopPropagation(); say(s.dataset.say); return; }
+  if (e.target.closest('[data-home]')) home();
+}, true);
+
+let esVoice = null;
+const pickVoice = () => { const v = speechSynthesis.getVoices(); esVoice = v.find(x => /^es[-_](ES|MX|US)/i.test(x.lang)) || v.find(x => /^es/i.test(x.lang)) || null; };
+if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function say(t) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(t.replace(/_+/g, '...').replace(/\//g, ','));
+  u.lang = esVoice ? esVoice.lang : 'es-ES'; if (esVoice) u.voice = esVoice; u.rate = 0.9;
+  speechSynthesis.speak(u);
+}
+
+// Lenient typed-answer check: ignores case, punctuation, (notes), a leading "to ", accents and small typos.
+const stripAcc = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+const clean = s => s.toLowerCase().replace(/\([^)]*\)/g, ' ').replace(/['’]/g, '').split('/')
+  .map(p => p.replace(/[¿?¡!.,;:"“”—–_\-]/g, ' ').replace(/\s+/g, ' ').trim().replace(/^to /, '')).filter(Boolean).join(' ');
+function lev(a, b) {
+  let prev = Array.from({length: b.length + 1}, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+function grade(typed, ans) {
+  const t = clean(typed), a = clean(ans);
+  if (t === a) return {ok: true};
+  const ta = stripAcc(t), aa = stripAcc(a);
+  if (ta === aa) return {ok: true, note: 'Watch the accents'};
+  if (aa.length > 4 && lev(ta, aa) <= Math.floor(aa.length / 8)) return {ok: true, note: 'Close, check the spelling'};
+  return {ok: false};
+}
+
+function home() {
+  screen++; onKey = null;
+  const cards = selected(), m = cards.filter(c => level(c) >= 2).length;
+  const secStat = s => { const cs = DECK.filter(c => c.sec === s); return `${cs.filter(c => level(c) >= 2).length}/${cs.length}`; };
+  app.innerHTML = `
+  <header><h1>🇪🇸 Spanish Midterm</h1></header>
+  <section class="panel">
+    <div class="between"><b>${m} of ${cards.length} mastered</b><span class="muted">${S.dir === 'es-en' ? 'Spanish → English' : 'English → Spanish'}</span></div>
+    <div class="bar"><i style="width:${m / cards.length * 100}%"></i></div>
+  </section>
+  <div class="modes">
+    <button class="mode" id="goLearn"><span class="ic">🧠</span><b>Learn</b><small>Multiple choice first, then type the answer. Cards you miss come back until you know them.</small></button>
+    <button class="mode" id="goFlash"><span class="ic">🃏</span><b>Flashcards</b><small>Flip cards and sort them into "know it" and "still learning".</small></button>
+  </div>
+  <h2>Direction</h2>
+  <div class="seg">
+    <button class="${S.dir === 'es-en' ? 'on' : ''}" data-dir="es-en">Spanish → English</button>
+    <button class="${S.dir === 'en-es' ? 'on' : ''}" data-dir="en-es">English → Spanish</button>
+  </div>
+  <h2>Topics</h2>
+  <div class="chips">
+    <button class="chip ${S.secs.length ? '' : 'on'}" data-all>All topics <small>${DECK.length}</small></button>
+    ${SECTIONS.map(s => `<button class="chip ${S.secs.includes(s) ? 'on' : ''}" data-sec="${esc(s)}">${esc(s)} <small>${secStat(s)}</small></button>`).join('')}
+  </div>
+  <p class="muted">Tip: master Spanish → English first, then switch to English → Spanish so you can say it yourself. Tap 🔊 to hear the Spanish. Progress saves on this device.</p>
+  <button class="link" id="reset">Reset progress</button>`;
+  $('goLearn').onclick = learn;
+  $('goFlash').onclick = () => flash();
+  app.querySelectorAll('[data-dir]').forEach(b => b.onclick = () => { S.dir = b.dataset.dir; save(); home(); });
+  app.querySelector('[data-all]').onclick = () => { S.secs = []; save(); home(); };
+  app.querySelectorAll('[data-sec]').forEach(b => b.onclick = () => {
+    const s = b.dataset.sec;
+    S.secs = S.secs.includes(s) ? S.secs.filter(x => x !== s) : [...S.secs, s];
+    save(); home();
+  });
+  $('reset').onclick = () => { if (confirm('Reset all progress?')) { S.lv = {}; save(); home(); } };
+}
+
+function flash(list) {
+  screen++;
+  const cards = shuffle([...(list || selected())]), known = [], learning = [];
+  let i = 0;
+  const draw = () => {
+    if (i >= cards.length) return end();
+    const c = cards[i], es = esFirst(c);
+    app.innerHTML = `${topBar('Flashcards', `${i + 1} / ${cards.length}`)}
+    <div class="bar"><i style="width:${i / cards.length * 100}%"></i></div>
+    <div class="flip" id="card"><div class="inner">
+      <div class="face"><div class="txt">${esc(P(c))}</div>${es ? spk(c.es) : ''}<small class="hint">Tap card to flip</small></div>
+      <div class="face b"><div class="txt">${esc(A(c))}</div>${es ? '' : spk(c.es)}</div>
+    </div></div>
+    <div class="sort"><button class="btn bad" id="no">✗ Still learning</button><button class="btn good" id="yes">✓ Know it</button></div>
+    <p class="muted center keys">Space: flip · ←: still learning · →: know it · or swipe the card</p>`;
+    const card = $('card');
+    const flip = () => card.classList.toggle('on');
+    const mark = once(k => { (k ? known : learning).push(c); i++; draw(); });
+    card.onclick = flip;
+    $('yes').onclick = () => mark(true);
+    $('no').onclick = () => mark(false);
+    let x0 = null;
+    card.ontouchstart = e => { x0 = e.touches[0].clientX; };
+    card.ontouchend = e => {
+      if (x0 == null) return;
+      const dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) > 60) { e.preventDefault(); mark(dx > 0); }
+    };
+    onKey = e => {
+      if ([' ', 'Enter', 'ArrowUp', 'ArrowDown'].includes(e.key)) { e.preventDefault(); flip(); }
+      else if (e.key === 'ArrowRight') mark(true);
+      else if (e.key === 'ArrowLeft') mark(false);
+    };
+  };
+  const end = () => {
+    const again = once(() => flash(learning));
+    onKey = e => { if (e.key === 'Enter') learning.length ? again() : home(); };
+    app.innerHTML = `${topBar('Flashcards')}
+    <section class="panel center"><div class="big">${learning.length ? '💪' : '🎉'}</div>
+      <h2>${known.length} known · ${learning.length} still learning</h2>
+      <p class="muted">${learning.length ? `Go through the ${learning.length} you're still learning again.` : 'You know every card in this set!'}</p>
+      <div class="stack">${learning.length ? `<button class="btn" id="again">Study ${learning.length} again</button>` : ''}
+        <button class="btn ghost" id="toLearn">Go to Learn mode</button><button class="btn ghost" data-home>Home</button></div>
+    </section>
+    ${learning.length ? `<ul class="review">${learning.map(c => `<li class="no"><b>${esc(c.es)}</b><span>${esc(c.en)}</span></li>`).join('')}</ul>` : ''}`;
+    if (learning.length) $('again').onclick = again;
+    $('toLearn').onclick = learn;
+  };
+  draw();
+}
+
+function learn() {
+  const my = ++screen;
+  let queue = [], q = 0, results = new Map(), requeued = new Set();
+  const head = () => {
+    const cs = selected(), m = cs.filter(c => level(c) >= 2).length;
+    return `${topBar('Learn', `${m} / ${cs.length} mastered`)}<div class="bar"><i style="width:${m / cs.length * 100}%"></i></div>`;
+  };
+  const qbox = (c, label) => `<div class="q"><div class="label">${label}</div><div class="txt">${esc(P(c))}</div>${esFirst(c) ? spk(c.es) : ''}</div>`;
+  const newRound = () => {
+    const pool = selected().filter(c => level(c) < 2);
+    if (!pool.length) return finished();
+    // Finish cards already in progress before starting new ones, 7 per round like Quizlet.
+    queue = shuffle([...shuffle(pool.filter(c => level(c) === 1)), ...shuffle(pool.filter(c => level(c) === 0))].slice(0, 7));
+    q = 0; results = new Map(); requeued = new Set();
+    ask();
+  };
+  const ask = () => {
+    if (q >= queue.length) return roundEnd();
+    const c = queue[q];
+    level(c) === 0 ? mc(c) : written(c);
+  };
+  const advance = () => { q++; ask(); };
+  const hit = c => { if (!results.has(c)) results.set(c, true); };
+  const miss = c => { results.set(c, false); if (!requeued.has(c)) { requeued.add(c); queue.push(c); } };
+
+  const mc = c => {
+    const ans = A(c);
+    const same = shuffle(DECK.filter(d => d.sec === c.sec).map(A)), rest = shuffle(DECK.map(A));
+    const opts = shuffle([ans, ...[...new Set([...same, ...rest])].filter(o => o !== ans).slice(0, 3)]);
+    app.innerHTML = `${head()}${qbox(c, 'Choose the answer')}
+    <div class="opts">${opts.map((o, k) => `<button class="opt"><span class="n">${k + 1}</span><span>${esc(o)}</span></button>`).join('')}</div>
+    <div class="foot" id="foot"><button class="link" id="dk">Don't know?</button></div>`;
+    const btns = [...app.querySelectorAll('.opt')], next = once(advance);
+    const pick = once(k => {
+      btns.forEach((b, j) => { b.disabled = true; b.classList.add(opts[j] === ans ? 'right' : j === k ? 'wrong' : 'dim'); });
+      if (opts[k] === ans) {
+        hit(c); setLevel(c, 1);
+        $('foot').innerHTML = `<div class="res good"><b>✓ ${praise()}</b></div>`;
+        setTimeout(() => { if (my === screen) next(); }, 800);
+        onKey = null;
+      } else {
+        miss(c); setLevel(c, 0);
+        $('foot').innerHTML = `<div class="res bad"><div>${k < 0 ? "Here's the answer:" : 'Not quite. The answer is:'} <b>${esc(ans)}</b>${spk(c.es, 'inline')}</div>
+          <div class="between"><span class="muted">You'll see this again.</span><button class="btn" id="cont">Continue</button></div></div>`;
+        $('cont').onclick = next;
+        onKey = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); next(); } };
+      }
+    });
+    btns.forEach((b, k) => b.onclick = () => pick(k));
+    $('dk').onclick = () => pick(-1);
+    onKey = e => { const n = +e.key; if (n >= 1 && n <= opts.length) pick(n - 1); };
+  };
+
+  const written = c => {
+    const ans = A(c), toEs = !esFirst(c);
+    app.innerHTML = `${head()}${qbox(c, toEs ? 'Type it in Spanish' : 'Type it in English')}
+    <form id="f" class="wf" autocomplete="off">
+      <input id="inp" class="inp" placeholder="Type the answer" autocapitalize="off" autocorrect="off" spellcheck="false" lang="${toEs ? 'es' : 'en'}">
+      ${toEs ? `<div class="acc">${[...'áéíóúñü¿¡'].map(ch => `<button type="button" class="ak">${ch}</button>`).join('')}</div>` : ''}
+      <div class="between"><button type="button" class="link" id="dk">Don't know?</button><button class="btn">Answer</button></div>
+    </form>
+    <div class="foot" id="foot"></div>`;
+    const inp = $('inp'), next = once(advance);
+    inp.focus();
+    onKey = null;
+    app.querySelectorAll('.ak').forEach(b => b.onclick = () => {
+      const s = inp.selectionStart ?? inp.value.length, e = inp.selectionEnd ?? s;
+      inp.value = inp.value.slice(0, s) + b.textContent + inp.value.slice(e);
+      inp.focus(); inp.setSelectionRange(s + 1, s + 1);
+    });
+    const result = (typed) => {
+      const g = typed == null ? {ok: false} : grade(typed, ans);
+      $('f').remove();
+      onKey = e => { if (e.key === 'Enter') { e.preventDefault(); next(); } };
+      if (g.ok) {
+        hit(c); setLevel(c, 2);
+        $('foot').innerHTML = `<div class="res good"><b>✓ ${praise()}</b>${g.note ? `<div>${g.note}: <b>${esc(ans)}</b>${spk(c.es, 'inline')}</div>
+          <div class="between"><span></span><button class="btn good" id="cont">Continue</button></div>` : ''}</div>`;
+        if (g.note) $('cont').onclick = next;
+        else setTimeout(() => { if (my === screen) next(); }, 800);
+        return;
+      }
+      miss(c); setLevel(c, 1);
+      $('foot').innerHTML = `<div class="res bad">
+        ${typed == null ? "<b>Here's the answer</b>" : `<b>Not quite</b><div>You typed: <s>${esc(typed)}</s></div>`}
+        <div>Correct: <b>${esc(ans)}</b>${spk(c.es, 'inline')}</div>
+        <div class="between">${typed == null ? '<span></span>' : '<button class="link" id="ov">Override: I was right</button>'}<button class="btn" id="cont">Continue</button></div></div>`;
+      $('cont').onclick = next;
+      if (typed != null) $('ov').onclick = () => {
+        results.set(c, true); setLevel(c, 2);
+        const extra = queue.lastIndexOf(c);
+        if (extra > q) queue.splice(extra, 1);
+        next();
+      };
+    };
+    $('f').onsubmit = e => { e.preventDefault(); if (inp.value.trim()) result(inp.value); };
+    $('dk').onclick = () => result(null);
+  };
+
+  const roundEnd = () => {
+    const cs = selected(), m = cs.filter(c => level(c) >= 2).length;
+    if (m === cs.length) return finished();
+    const right = [...results.values()].filter(Boolean).length, go = once(newRound);
+    app.innerHTML = `${head()}<section class="panel center"><div class="big">🔥</div>
+      <h2>Round done: ${right} of ${results.size} right the first time</h2>
+      <p class="muted">${cs.length - m} cards left to master. Keep going!</p>
+      <button class="btn" id="cont">Continue</button></section>
+    <ul class="review">${[...results.keys()].map(c => `<li class="${results.get(c) ? 'ok' : 'no'}"><b>${esc(c.es)}</b><span>${esc(c.en)}</span>
+      <i>${level(c) >= 2 ? '✓ Mastered' : level(c) === 1 ? 'Next: type it' : 'Keep practicing'}</i></li>`).join('')}</ul>`;
+    $('cont').onclick = go;
+    onKey = e => { if (e.key === 'Enter') go(); };
+  };
+
+  const finished = () => {
+    onKey = null;
+    const other = S.dir === 'es-en' ? 'English → Spanish' : 'Spanish → English';
+    app.innerHTML = `${topBar('Learn')}<section class="panel center"><div class="big">🎉</div>
+      <h2>You mastered all ${selected().length} cards!</h2>
+      <p class="muted">${S.dir === 'es-en' ? 'Now flip it and practice saying them in Spanish.' : 'You can say all of these in Spanish now. ¡Excelente!'}</p>
+      <div class="stack"><button class="btn" id="sw">Learn ${other}</button><button class="btn ghost" id="redo">Learn these again</button><button class="btn ghost" data-home>Home</button></div></section>`;
+    $('sw').onclick = () => { S.dir = S.dir === 'es-en' ? 'en-es' : 'es-en'; save(); learn(); };
+    $('redo').onclick = () => { selected().forEach(c => delete S.lv[lk(c)]); save(); learn(); };
+  };
+  newRound();
+}
+
+home();
+</script>
+</body>
+</html>
