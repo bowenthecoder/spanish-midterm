@@ -170,6 +170,7 @@ function variants(c) {
   }
   return [...out];
 }
+const twinAnswers = c => DECK.filter(d => P(d) === P(c)).map(A);
 const gradeAny = (typed, answers) => answers.map(a => ({...grade(typed, a), a})).sort((x, y) => (y.ok - x.ok) || (!!x.note - !!y.note))[0];
 function grade(typed, ans) {
   const t = clean(typed), a = clean(ans);
@@ -303,7 +304,8 @@ function learn() {
   const mc = c => {
     const ans = A(c);
     const same = shuffle(DECK.filter(d => d.sec === c.sec).map(A)), rest = shuffle(DECK.map(A));
-    const opts = shuffle([ans, ...[...new Set([...same, ...rest])].filter(o => o !== ans).slice(0, 3)]);
+    const twins = twinAnswers(c); // cards sharing this prompt, e.g. Perdón / Con permiso, are never wrong options
+    const opts = shuffle([ans, ...[...new Set([...same, ...rest])].filter(o => !twins.includes(o)).slice(0, 3)]);
     app.innerHTML = `${head()}${qbox(c, 'Choose the answer')}
     <div class="opts">${opts.map((o, k) => `<button class="opt"><span class="n">${k + 1}</span><span>${esc(o)}</span></button>`).join('')}</div>
     <div class="foot" id="foot"><button class="link" id="dk">Don't know?</button></div>`;
@@ -346,7 +348,7 @@ function learn() {
       inp.focus(); inp.setSelectionRange(s + 1, s + 1);
     });
     const result = (typed) => {
-      const g = typed == null ? {ok: false} : gradeAny(typed, variants(c));
+      const g = typed == null ? {ok: false} : gradeAny(typed, DECK.filter(d => P(d) === P(c)).flatMap(variants));
       $('f').remove();
       onKey = e => { if (e.key === 'Enter') { e.preventDefault(); next(); } };
       if (g.ok) {
