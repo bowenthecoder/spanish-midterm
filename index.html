@@ -841,8 +841,25 @@ const P_LOC = [
   ['Where is the bathroom?', '¿Dónde está el baño?'],
   ['The lab is next to the gym.', 'El laboratorio está al lado del gimnasio.'],
   ['We are in class.', 'Estamos en clase.', 'Estamos en la clase.'],
+  ['The professor is in front of the class.', 'El profesor está delante de la clase.', 'La profesora está delante de la clase.'],
+  ['The backpack is behind the door.', 'La mochila está detrás de la puerta.'],
+  ['The window is to the right of the board.', 'La ventana está a la derecha de la pizarra.'],
+  ['The clock is to the left of the door.', 'El reloj está a la izquierda de la puerta.'],
+  ['The pen is between the books.', 'La pluma está entre los libros.'],
+  ['The map is on the wall.', 'El mapa está en la pared.'],
+  ['The dictionary is on the desk.', 'El diccionario está sobre el escritorio.', 'El diccionario está encima del escritorio.', 'El diccionario está en el escritorio.'],
+  ['I study with my friends.', 'Estudio con mis amigos.'],
+  ['Where are the students? They are over there.', '¿Dónde están los estudiantes? Están allá.', '¿Dónde están los estudiantes? Están allí.'],
   ['I am tired today.', 'Estoy cansado hoy.', 'Estoy cansada hoy.', 'Hoy estoy cansado.', 'Hoy estoy cansada.'],
 ];
+const P_PREP = [['near', 'cerca de'], ['far from', 'lejos de'], ['on top of', 'encima de'], ['under; below', 'debajo de'], ['in front of', 'delante de'], ['behind', 'detrás de'],
+  ['next to; beside', 'al lado de'], ['to the right of', 'a la derecha de'], ['to the left of', 'a la izquierda de'], ['between; among', 'entre'], ['on; over', 'sobre'],
+  ['in; on; at', 'en'], ['with', 'con'], ['without', 'sin'], ['there', 'allí'], ['over there', 'allá']];
+const PREP_OPP = [['cerca de', 'lejos de'], ['encima de', 'debajo de'], ['delante de', 'detrás de'], ['a la derecha de', 'a la izquierda de'], ['con', 'sin']];
+const prepGens = [fromList(P_PREP, ([en, es]) => ({label: 'Location word: write it in Spanish', q: en, show: es, check: sentCheck(es === 'allí' ? [es, 'ahí'] : [es]),
+    why: es.endsWith(' de') ? 'Use it with estar, and keep the "de": El libro está ' + es + ' la mesa. de + el = del.' : ''})),
+  fromList(P_PREP.filter(([, es]) => PREP_OPP.flat().includes(es)), ([en, es]) => { const opp = PREP_OPP.find(o => o.includes(es)).find(x => x !== es);
+    return mcq('Which one means this?', en, es, [opp], `${es} is the opposite of ${opp}`); })];
 const P_ADJ = [['My mother is nice. (simpático)', 'Mi madre es simpática.', 'Mi madre es simpático.', 'feminine noun → -a'],
   ['My cousins are tall. (alto)', 'Mis primos son altos.', 'Mis primos son alto.', 'plural → -os'], ['The classes are difficult. (difícil)', 'Las clases son difíciles.', 'Las clases son difícil.', 'ends in a consonant → add -es'],
   ['My grandfather is hardworking. (trabajador)', 'Mi abuelo es trabajador.', 'Mi abuelo es trabajadora.', 'masculine → no -a'], ['My sister is intelligent. (inteligente)', 'Mi hermana es inteligente.', 'Mi hermana es inteligenta.', '-e adjectives don\'t change for gender'],
@@ -940,10 +957,14 @@ const STEPS = [
   {t: 'Asking questions', tag: 'Lesson 2', lesson: L('❓ Questions', `<p>¿Qué? what · ¿Quién/Quiénes? who · ¿Dónde? where · ¿De dónde? from where · ¿Adónde? to where · ¿Cuándo? when · ¿Cómo? how · ¿Por qué? why (answer: <b>porque</b>) · ¿Cuánto/a? how much · ¿Cuántos/as? how many · ¿Cuál/Cuáles? which</p>
     <p>Yes/no questions: <i>¿Hablas español?</i> · <i>¿Hablas tú español?</i> · <i>Hablas español, ¿verdad? / ¿no?</i></p><p>💡 Every question word has an accent, and the question starts with <b>¿</b>.</p>`),
     gens: [...sents(P_Q), pairGen(P_QMC)]},
-  {t: 'Ser and estar forms, plus location', tag: 'Lessons 1–2', lesson: L('📍 Ser and estar forms, plus where things are', `<table><tr><th></th><th>ser</th><th>estar</th></tr><tr><td>yo</td><td>soy</td><td>estoy</td></tr><tr><td>tú</td><td>eres</td><td>estás</td></tr>
+  {t: 'Ser and estar forms, plus location words', tag: 'Lessons 1–2', lesson: L('📍 Ser and estar forms, plus where things are', `<table><tr><th></th><th>ser</th><th>estar</th></tr><tr><td>yo</td><td>soy</td><td>estoy</td></tr><tr><td>tú</td><td>eres</td><td>estás</td></tr>
     <tr><td>él / ella / usted</td><td>es</td><td>está</td></tr><tr><td>nosotros</td><td>somos</td><td>estamos</td></tr><tr><td>ellos / ellas / ustedes</td><td>son</td><td>están</td></tr></table>
-    <p><b>Location uses estar:</b> al lado de (next to) · cerca de (near) · lejos de (far from) · encima de (on top of) · debajo de (under) · delante de (in front of) · detrás de (behind) · a la derecha / izquierda de (right / left of) · entre (between) · en (in, on)</p>
-    <p>💡 <b>de + el = del</b>: al lado <b>del</b> gimnasio (but al lado <b>de la</b> cafetería).</p>`), gens: [conjGen(IRRV.slice(0, 2)), ...sents(P_LOC)]},
+    <p><b>Location uses estar.</b> Learn the location words in opposite pairs:</p>
+    <table><tr><td>cerca de: near</td><td>lejos de: far from</td></tr><tr><td>encima de: on top of</td><td>debajo de: under, below</td></tr>
+    <tr><td>delante de: in front of</td><td>detrás de: behind</td></tr><tr><td>a la derecha de: to the right of</td><td>a la izquierda de: to the left of</td></tr>
+    <tr><td>con: with</td><td>sin: without</td></tr><tr><td>al lado de: next to</td><td>entre: between</td></tr><tr><td>sobre: on, over</td><td>en: in, on, at</td></tr><tr><td>allí: there</td><td>allá: over there</td></tr></table>
+    <p>💡 <b>Memory hooks:</b> de<b>bajo</b> has <b>bajo</b> (low) in it · <b>delante</b> sounds like <b>adelante</b> (forward) · <b>i</b>zquierda comes before <b>d</b>erecha in the alphabet, the same way left comes before right when you read · every word that ends in "de" keeps its de: <i>cerca <b>de</b> la biblioteca</i>.</p>
+    <p>💡 <b>de + el = del</b>: al lado <b>del</b> gimnasio (but al lado <b>de la</b> cafetería).</p>`), gens: [conjGen(IRRV.slice(0, 2)), prepGens[0], ...sents(P_LOC), prepGens[1], ...sents(P_LOC)]},
   {t: 'Ser vs. estar', tag: 'Lessons 1–3', lesson: SE_LESSON, gens: [SE_LEVELS[0].gen, SE_LEVELS[1].gen]},
   {t: 'Family and adjectives', tag: 'Lesson 3', lesson: L('👨‍👩‍👧 Family and adjectives', `<p>padre/madre (papá/mamá) · hermano/a · hijo/a · abuelo/a · tío/a · primo/a · sobrino/a · esposo/a · novio/a · amigo/a · los padres = parents</p>
     <ul><li>Adjectives go <b>after</b> the noun and <b>match it</b> in gender and number: el chico alt<b>o</b>, la chica alt<b>a</b>, los chicos alt<b>os</b>, las chicas alt<b>as</b>.</li>
