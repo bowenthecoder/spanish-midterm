@@ -108,7 +108,7 @@ const DECK = [], SECTIONS = [];
 }}
 
 const KEY = 'es-midterm-v1';
-const S = Object.assign({dir: 'es-en', secs: [], lv: {}}, JSON.parse(localStorage.getItem(KEY) || '{}'));
+const S = Object.assign({dir: 'es-en', secs: [], lv: {}, path: {}, essay: ''}, JSON.parse(localStorage.getItem(KEY) || '{}'));
 S.secs = S.secs.filter(s => SECTIONS.includes(s));
 const save = () => localStorage.setItem(KEY, JSON.stringify(S));
 const lk = c => S.dir + '|' + c.id;
@@ -201,9 +201,10 @@ function home() {
     <div class="bar"><i style="width:${m / cards.length * 100}%"></i></div>
   </section>
   <div class="modes">
-    <button class="mode wide" id="goGuide"><span class="ic">📖</span><b>Start here: 2-hour cram plan + study guide</b><small>Everything for Monday on one page. The plan tells you what to do, in order, and opens each drill.</small></button>
+    <button class="mode wide" id="goPath"><span class="ic">▶️</span><b>${pathNext() ? (pathNext() < STEPS.length ? `Continue: step ${pathNext() + 1} of ${STEPS.length}` : 'Path finished: see the end') : 'Start the midterm path'}</b><small>${pathNext() < STEPS.length ? esc(STEPS[pathNext()].t) + ' · ' : ''}${STEPS.length} steps from start to end. Each one is a short lesson, then 10 questions with full sentences to type. It covers everything on the midterm.</small></button>
   </div>
-  <h2>Focus modules (the big three)</h2>
+  <h2>Extra practice (optional)</h2>
+  <div class="modes"><button class="mode" id="goGuide"><span class="ic">📖</span><b>Study guide</b><small>Everything on one page, for reference.</small></button></div>
   <div class="modes three">
     <button class="mode focus" data-mod="time"><span class="ic">⏰</span><b>Telling time</b><small>The recipe, then endless clock drills, including listening.</small></button>
     <button class="mode focus" data-mod="numbers"><span class="ic">🔢</span><b>Numbers to millions</b><small>How to build any number, memory tricks, then random drills.</small></button>
@@ -228,6 +229,7 @@ function home() {
   <p class="muted">Topics come from your Portales 2.0 Lessons 1–3 (midterm Mon 10/26). Tip: master Spanish → English first, then switch to English → Spanish so you can say it yourself. Tap 🔊 to hear the Spanish. Progress saves on this device.</p>
   <button class="link" id="reset">Reset progress</button>`;
   $('goGuide').onclick = guide;
+  $('goPath').onclick = () => pathStep(pathNext());
   app.querySelectorAll('[data-mod]').forEach(b => b.onclick = () => moduleScreen(b.dataset.mod));
   $('goLearn').onclick = learn;
   $('goFlash').onclick = () => flash();
@@ -246,7 +248,7 @@ function home() {
   $('reset').onclick = () => { if (confirm('Reset all progress?')) { S.lv = {}; save(); home(); } };
 }
 
-const GUIDE = "<div class=\"g\">\n<section class=\"panel gpanel\">\n  <h2>🎯 Midterm: Monday 10/26 · Lessons 1–3</h2>\n  <p>The quizzes so far have had listening, vocab and grammar, and a short writing section, so expect the same. Exam verbs from class: <b>all -ar verbs</b> (estudiar, hablar, practicar), <b>-er/-ir verbs</b> (comer, correr, abrir, escribir), plus <b>tener, venir, ser, estar</b>. Past tense is not on it.</p>\n  <h3>⏱️ 2-hour cram plan (do it in this order, then stop)</h3>\n  <ol class=\"plan\">\n    <li><b>0:00–0:30</b> <button class=\"btn small\" data-mod=\"time\">⏰ Telling time</button> Read the recipe (5 min), then do levels 1–6. Get 8/10 on each, then move on.</li>\n    <li><b>0:30–1:00</b> <button class=\"btn small\" data-mod=\"numbers\">🔢 Numbers to millions</button> Read the 7 steps, then do levels 1–8. Most of your time goes to 3–7, the hundreds and thousands.</li>\n    <li><b>1:00–1:20</b> <button class=\"btn small\" data-mod=\"serestar\">⚖️ Ser vs. estar</button> Learn DOCTOR / PLACE, then do level 1, then level 2.</li>\n    <li><b>1:20–1:35</b> <button class=\"btn small\" data-study=\"Class · Rules|Class · Sentences\">Class notes (Oct 19)</button> What the professor said will be on it: tú vs. tu, nuestras, tener for age, veintiún años, ser de vs. vivir en.</li>\n    <li><b>1:35–1:50</b> Skim sections 1–8 below. If a verb form looks shaky, run <button class=\"btn small\" data-study=\"Grammar · Conjugation drill\">Conjugation drill</button> on just that verb.</li>\n    <li><b>1:50–2:00</b> Read the writing paragraph in section 13 out loud once. Done. Sleep.</li>\n  </ol>\n  <p class=\"muted\">Only if you have extra time: <button class=\"btn small ghost\" data-study=\"@L1|@L2|@L3\">Lessons 1–3 vocab</button> <button class=\"btn small ghost\" data-study=\"L2 · Numbers 31–100|L2 · Numbers 101 and up\">Number flashcards</button> <button class=\"btn small ghost\" data-study=\"Speaking · Introduce yourself|Speaking · Practice sentences\">Speaking</button></p>\n</section>\n\n<h2>1. Present tense endings</h2>\n<table><tr><th></th><th>-ar <small>hablar</small></th><th>-er <small>comer</small></th><th>-ir <small>vivir</small></th></tr>\n<tr><td>yo</td><td>habl<b>o</b></td><td>com<b>o</b></td><td>viv<b>o</b></td></tr>\n<tr><td>tú</td><td>habl<b>as</b></td><td>com<b>es</b></td><td>viv<b>es</b></td></tr>\n<tr><td>él / ella / usted</td><td>habl<b>a</b></td><td>com<b>e</b></td><td>viv<b>e</b></td></tr>\n<tr><td>nosotros</td><td>habl<b>amos</b></td><td>com<b>emos</b></td><td>viv<b>imos</b></td></tr>\n<tr><td>ellos / ellas / ustedes</td><td>habl<b>an</b></td><td>com<b>en</b></td><td>viv<b>en</b></td></tr></table>\n<ul>\n  <li><b>-er and -ir are the same except nosotros:</b> nosotros com<b>emos</b> vs. nosotros viv<b>imos</b>.</li>\n  <li><b>Vosotros</b> (Spain's \"you all\": habláis, coméis, vivís, tenéis) is not tested, but you get credit if you use it correctly.</li>\n  <li>To negate, put <b>no</b> before the verb: <i>No hablo francés.</i></li>\n</ul>\n\n<h2>2. The irregular verbs you need</h2>\n<table><tr><th></th><th>ser</th><th>estar</th><th>tener</th><th>venir</th></tr>\n<tr><td>yo</td><td>soy</td><td>estoy</td><td>tengo</td><td>vengo</td></tr>\n<tr><td>tú</td><td>eres</td><td>estás</td><td>tienes</td><td>vienes</td></tr>\n<tr><td>él / ella / usted</td><td>es</td><td>está</td><td>tiene</td><td>viene</td></tr>\n<tr><td>nosotros</td><td>somos</td><td>estamos</td><td>tenemos</td><td>venimos</td></tr>\n<tr><td>ellos / ellas / ustedes</td><td>son</td><td>están</td><td>tienen</td><td>vienen</td></tr></table>\n<p class=\"muted\">Vosotros, not tested: sois, estáis, tenéis, venís. Venir follows the same pattern as tener: veng<b>o</b>, v<b>ie</b>nes, v<b>ie</b>ne, venimos, v<b>ie</b>nen.</p>\n\n<h2>3. Ser or estar?</h2>\n<p>Full lesson with the memory tricks and a drill: <button class=\"btn small\" data-mod=\"serestar\">⚖️ Ser vs. estar module</button></p>\n<table><tr><th>ser = what / who</th><th>estar = where / how</th></tr>\n<tr><td>Origin: <i>Soy de Boston.</i></td><td>Location: <i>La biblioteca está al lado de la cafetería.</i></td></tr>\n<tr><td>Description: <i>Mi hermano es alto.</i></td><td>Health and feelings: <i>Estoy bien, gracias.</i></td></tr>\n<tr><td>Profession: <i>Ella es doctora.</i></td><td></td></tr>\n<tr><td>Time: <i>Son las dos.</i></td><td></td></tr></table>\n<p><b>Origin vs. where you live:</b> <i>Mis primos <b>son de</b> España pero <b>viven en</b> Argentina.</i> (ser de = where they're from; vivir en = where they live now)</p>\n<p><b>Location words (with estar):</b> al lado de (next to), a la derecha de / a la izquierda de (to the right / left of), cerca de (near), lejos de (far from), delante de (in front of), detrás de (behind), encima de (on top of), debajo de (below), entre (between), en (in, on), sobre (on, over), con (with), sin (without), allí / allá (there / over there).</p>\n\n<h2>4. Tener: age and expressions</h2>\n<ul>\n  <li><b>Age always uses tener, never ser:</b> <i>Tengo 20 años.</i> Never say <s>Soy 20 años</s>.</li>\n  <li><b>veintiún años</b>, not <s>veintiuno años</s>: <i>uno</i> drops the -o before a noun (un libro, veintiún años, treinta y un estudiantes).</li>\n  <li>Asking age: <i>¿Cuántos años tienes?</i> (you) · <i>¿Cuántos años tiene?</i> (he/she/you formal) · <i>¿Cuántos años tienen?</i> (they) · <i>¿Cuántos años tenemos?</i> (we)</li>\n  <li><b>tener + noun</b> = \"to be ___\": tener hambre (hungry), sed (thirsty), sueño (sleepy), frío (cold), calor (hot), prisa (in a hurry), miedo de (afraid of), cuidado (careful), suerte (lucky), razón (right), no tener razón (wrong). Add <i>mucho/mucha</i> for \"very\": <i>Tengo mucha hambre.</i></li>\n  <li><b>tener que + verb</b> = have to: <i>Tengo que estudiar.</i> · <b>tener ganas de + verb</b> = feel like: <i>Tengo ganas de descansar.</i></li>\n</ul>\n\n<h2>5. Possessive adjectives</h2>\n<table><tr><th>one thing</th><th>more than one</th><th>meaning</th></tr>\n<tr><td>mi</td><td>mis</td><td>my</td></tr>\n<tr><td>tu</td><td>tus</td><td>your (informal)</td></tr>\n<tr><td>su</td><td>sus</td><td>his / her / its / your (formal) / their</td></tr>\n<tr><td>nuestro / nuestra</td><td>nuestros / nuestras</td><td>our</td></tr></table>\n<ul>\n  <li>The possessive <b>matches the thing owned</b>, not the owner: <i><b>Nuestras</b> raquetas</i> (raquetas is feminine plural) · <i><b>Nuestras</b> fotos aparecen en el periódico</i> (foto is feminine even though it ends in -o) · <i><b>nuestros</b> primos</i>.</li>\n  <li><b>tú</b> (with an accent) = you · <b>tu</b> (no accent) = your: <i>Tú tienes tu libro.</i></li>\n</ul>\n\n<h2>6. Verb notes from class</h2>\n<ul>\n  <li><b>asistir a</b> = to attend, and it always takes <b>a</b>: <i>Asisto <b>a</b> clase los lunes y los viernes.</i></li>\n  <li>-er/-ir verbs: comer (eat), beber (drink), correr (run), leer (read), aprender (learn), comprender (understand), creer en (believe in), deber + verb (should), abrir (open), escribir (write), vivir (live), compartir (share), asistir a (attend), recibir (receive), decidir (decide), describir (describe).</li>\n  <li>-ar verbs: estudiar, hablar, practicar, trabajar, tomar, bailar, buscar (look for), caminar, cantar, cenar, comprar, contestar, conversar, desayunar, descansar, desear, dibujar, enseñar, escuchar, esperar, explicar, llegar, llevar, mirar, necesitar, preguntar, preparar, regresar, terminar, viajar.</li>\n  <li><b>gustar:</b> <i>Me gusta</i> + one thing or a verb (<i>Me gusta bailar</i>) · <i>Me gustan</i> + plural things (<i>Me gustan las clases</i>) · <i>¿Te gusta…?</i> · <i>Le gusta…</i></li>\n</ul>\n\n<h2>7. Nouns, articles and adjectives</h2>\n<ul>\n  <li><b>the:</b> el / la / los / las · <b>a, some:</b> un / una / unos / unas</li>\n  <li>-o is usually masculine (el libro), -a is usually feminine (la mesa). Exceptions: <i>el problema, el mapa, el día, el programa</i>; <i>la mano, la foto</i>. Words ending in -dad or -ción are feminine (la universidad, la lección).</li>\n  <li>Plurals: add -s after a vowel (libro → libros), -es after a consonant (profesor → profesores). Exception: lápiz → lápi<b>ces</b>.</li>\n  <li>Adjectives go <b>after</b> the noun and match it: <i>la chica alta, los chicos altos, las profesoras simpáticas</i>. Adjectives ending in -e or a consonant only add -s / -es: <i>inteligente → inteligentes</i>, <i>difícil → difíciles</i>.</li>\n  <li>Nationalities ending in a consonant add -a for feminine: <i>español → española, francés → francesa, alemán → alemana</i>.</li>\n  <li><b>hay</b> = there is / there are: <i>Hay veinte estudiantes en la clase.</i> · <i>No hay</i> = there isn't / aren't.</li>\n</ul>\n\n<h2>8. Questions</h2>\n<ul>\n  <li>¿Qué? (what) · ¿Quién / Quiénes? (who) · ¿Dónde? (where) · ¿Adónde? (to where) · ¿De dónde? (from where) · ¿Cuándo? (when) · ¿Cómo? (how) · ¿Por qué? (why), answered with <i>porque</i> (because) · ¿Cuánto/a? (how much) · ¿Cuántos/as? (how many) · ¿Cuál / Cuáles? (which) · ¿De quién? (whose)</li>\n  <li>Three ways to ask a yes/no question: <i>¿Hablas español?</i> (raise your voice) · <i>¿Hablas tú español?</i> (flip the subject and verb) · <i>Hablas español, ¿verdad? / ¿no?</i> (add a tag)</li>\n</ul>\n\n<h2>9. Telling time</h2>\n<p>Full lesson and endless drills: <button class=\"btn small\" data-mod=\"time\">⏰ Telling time module</button></p>\n<ul>\n  <li><i>¿Qué hora es?</i> → <b>Es la una</b> (only for 1:00–1:59) · <b>Son las</b> dos, tres… (every other hour)</li>\n  <li>Minutes after the hour: <b>y</b> (<i>Son las dos y diez</i> = 2:10). Minutes before: <b>menos</b> (<i>Son las tres menos diez</i> = 2:50).</li>\n  <li><b>y cuarto</b> / y quince = :15 · <b>y media</b> / y treinta = :30 · <b>menos cuarto</b> = :45 (<i>Son las nueve menos cuarto</i> = 8:45) · <b>en punto</b> = on the dot</li>\n  <li>With a clock time: <b>de la</b> mañana / tarde / noche (<i>a las ocho de la mañana</i>). In general, with no clock time: <b>por la</b> mañana (<i>Estudio por la tarde</i>).</li>\n  <li><i>Es mediodía</i> (noon) · <i>Es medianoche</i> (midnight) · <i>¿A qué hora es la clase?</i> → <i>La clase es <b>a las</b> once y media.</i></li>\n</ul>\n\n<h2>10. Numbers (all the way to millions)</h2>\n<p>Full lesson with memory tricks, plus random drills at every size: <button class=\"btn small\" data-mod=\"numbers\">🔢 Numbers module</button></p>\n<ul>\n  <li>0–15: cero, uno, dos, tres, cuatro, cinco, seis, siete, ocho, nueve, diez, once, doce, trece, catorce, quince</li>\n  <li>16–29 are one word: dieciséis, diecisiete, dieciocho, diecinueve, veinte, veintiuno, veintidós, veintitrés… veintinueve</li>\n  <li>31 and up use <b>y</b>, but only between the tens and the ones: treinta y uno, cuarenta y cinco. Tens: treinta, cuarenta, cincuenta, sesenta, setenta, ochenta, noventa.</li>\n  <li><b>cien</b> = exactly 100 · <b>ciento</b> for 101–199 (ciento uno). Hundreds: doscientos, trescientos, cuatrocientos, <b>quinientos</b>, seiscientos, <b>setecientos</b>, ochocientos, <b>novecientos</b> (5, 7 and 9 are the odd ones).</li>\n  <li><b>mil</b> = 1.000 (never \"un mil\") · dos mil · diez mil · cien mil · <b>un millón</b> · dos <b>millones</b> · un millón <b>de</b> dólares</li>\n  <li>Spanish writes thousands with a dot: 45.678 = cuarenta y cinco mil seiscientos setenta y ocho. Years: 2026 = dos mil veintiséis.</li>\n  <li><b>uno</b> becomes <b>un</b> before a masculine noun or mil, and <b>una</b> before a feminine noun: <i>veintiún años, veintiún mil, veintiuna personas</i>.</li>\n</ul>\n\n<h2>11. Days</h2>\n<ul>\n  <li>lunes, martes, miércoles, jueves, viernes, sábado, domingo (no capital letters)</li>\n  <li><b>el lunes</b> = on Monday (this one) · <b>los lunes</b> = on Mondays (every week). You don't need \"en\": <i>Tengo clase los lunes y los miércoles.</i></li>\n  <li><i>¿Qué día es hoy? Hoy es martes.</i> · hoy (today) · mañana (tomorrow) · ayer (yesterday)</li>\n</ul>\n\n<h2>12. Greetings and introductions</h2>\n<table><tr><th>informal (tú)</th><th>formal (usted)</th></tr>\n<tr><td>¿Cómo estás?</td><td>¿Cómo está usted?</td></tr>\n<tr><td>¿Cómo te llamas? Me llamo…</td><td>¿Cómo se llama usted?</td></tr>\n<tr><td>¿De dónde eres? Soy de…</td><td>¿De dónde es usted?</td></tr>\n<tr><td>¿Y tú?</td><td>¿Y usted?</td></tr>\n<tr><td>Te presento a…</td><td>Le presento a…</td></tr></table>\n<p>Answers: (Muy) bien, gracias · Regular · Nada · No muy bien. Meeting someone: Mucho gusto · Encantado/a · El gusto es mío · Igualmente. Goodbyes: Adiós · Hasta luego · Hasta mañana · Hasta pronto · Nos vemos · Chau. Polite phrases: Por favor · (Muchas) gracias · De nada · No hay de qué · Perdón · Con permiso · Lo siento.</p>\n\n<h2>13. Writing section: a paragraph you can adapt</h2>\n<p class=\"panel\"><i>Hola, me llamo Bowen. Soy de ___ y vivo en Wellesley. Tengo veinte años. Soy estudiante en Babson. Estudio negocios y español. Asisto a clase los lunes y los miércoles a las once y media. Mi familia es pequeña: tengo un hermano y dos primos. Mi madre es simpática y trabajadora. Mis primos son de España pero viven en Argentina. Nosotros comemos en la cafetería y estudiamos en la biblioteca. Me gusta escuchar música. ¡Hasta luego!</i></p>\n<p class=\"muted center\">Questions you can't answer? Tap the buttons in the cram plan at the top to drill that topic.</p>\n</div>\n";
+const GUIDE = "<div class=\"g\">\n<section class=\"panel gpanel\">\n  <h2>🎯 Midterm: Monday 10/26 · Lessons 1–3</h2>\n  <p>The quizzes so far have had listening, vocab and grammar, and a short writing section, so expect the same. Exam verbs from class: <b>all -ar verbs</b> (estudiar, hablar, practicar), <b>-er/-ir verbs</b> (comer, correr, abrir, escribir), plus <b>tener, venir, ser, estar</b>. Past tense is not on it.</p>\n  <h3>How to study</h3>\n  <p><button class=\"btn small\" data-path>▶️ Follow the midterm path</button> 15 steps from start to end, about 2 hours in total. Each step is a short lesson, then 10 questions, mostly full sentences you type. This page is the same material on one sheet, for reference.</p>\n</section>\n\n<h2>1. Present tense endings</h2>\n<table><tr><th></th><th>-ar <small>hablar</small></th><th>-er <small>comer</small></th><th>-ir <small>vivir</small></th></tr>\n<tr><td>yo</td><td>habl<b>o</b></td><td>com<b>o</b></td><td>viv<b>o</b></td></tr>\n<tr><td>tú</td><td>habl<b>as</b></td><td>com<b>es</b></td><td>viv<b>es</b></td></tr>\n<tr><td>él / ella / usted</td><td>habl<b>a</b></td><td>com<b>e</b></td><td>viv<b>e</b></td></tr>\n<tr><td>nosotros</td><td>habl<b>amos</b></td><td>com<b>emos</b></td><td>viv<b>imos</b></td></tr>\n<tr><td>ellos / ellas / ustedes</td><td>habl<b>an</b></td><td>com<b>en</b></td><td>viv<b>en</b></td></tr></table>\n<ul>\n  <li><b>-er and -ir are the same except nosotros:</b> nosotros com<b>emos</b> vs. nosotros viv<b>imos</b>.</li>\n  <li><b>Vosotros</b> (Spain's \"you all\": habláis, coméis, vivís, tenéis) is not tested, but you get credit if you use it correctly.</li>\n  <li>To negate, put <b>no</b> before the verb: <i>No hablo francés.</i></li>\n</ul>\n\n<h2>2. The irregular verbs you need</h2>\n<table><tr><th></th><th>ser</th><th>estar</th><th>tener</th><th>venir</th></tr>\n<tr><td>yo</td><td>soy</td><td>estoy</td><td>tengo</td><td>vengo</td></tr>\n<tr><td>tú</td><td>eres</td><td>estás</td><td>tienes</td><td>vienes</td></tr>\n<tr><td>él / ella / usted</td><td>es</td><td>está</td><td>tiene</td><td>viene</td></tr>\n<tr><td>nosotros</td><td>somos</td><td>estamos</td><td>tenemos</td><td>venimos</td></tr>\n<tr><td>ellos / ellas / ustedes</td><td>son</td><td>están</td><td>tienen</td><td>vienen</td></tr></table>\n<p class=\"muted\">Vosotros, not tested: sois, estáis, tenéis, venís. Venir follows the same pattern as tener: veng<b>o</b>, v<b>ie</b>nes, v<b>ie</b>ne, venimos, v<b>ie</b>nen.</p>\n\n<h2>3. Ser or estar?</h2>\n<p>Full lesson with the memory tricks and a drill: <button class=\"btn small\" data-mod=\"serestar\">⚖️ Ser vs. estar module</button></p>\n<table><tr><th>ser = what / who</th><th>estar = where / how</th></tr>\n<tr><td>Origin: <i>Soy de Boston.</i></td><td>Location: <i>La biblioteca está al lado de la cafetería.</i></td></tr>\n<tr><td>Description: <i>Mi hermano es alto.</i></td><td>Health and feelings: <i>Estoy bien, gracias.</i></td></tr>\n<tr><td>Profession: <i>Ella es doctora.</i></td><td></td></tr>\n<tr><td>Time: <i>Son las dos.</i></td><td></td></tr></table>\n<p><b>Origin vs. where you live:</b> <i>Mis primos <b>son de</b> España pero <b>viven en</b> Argentina.</i> (ser de = where they're from; vivir en = where they live now)</p>\n<p><b>Location words (with estar):</b> al lado de (next to), a la derecha de / a la izquierda de (to the right / left of), cerca de (near), lejos de (far from), delante de (in front of), detrás de (behind), encima de (on top of), debajo de (below), entre (between), en (in, on), sobre (on, over), con (with), sin (without), allí / allá (there / over there).</p>\n\n<h2>4. Tener: age and expressions</h2>\n<ul>\n  <li><b>Age always uses tener, never ser:</b> <i>Tengo 20 años.</i> Never say <s>Soy 20 años</s>.</li>\n  <li><b>veintiún años</b>, not <s>veintiuno años</s>: <i>uno</i> drops the -o before a noun (un libro, veintiún años, treinta y un estudiantes).</li>\n  <li>Asking age: <i>¿Cuántos años tienes?</i> (you) · <i>¿Cuántos años tiene?</i> (he/she/you formal) · <i>¿Cuántos años tienen?</i> (they) · <i>¿Cuántos años tenemos?</i> (we)</li>\n  <li><b>tener + noun</b> = \"to be ___\": tener hambre (hungry), sed (thirsty), sueño (sleepy), frío (cold), calor (hot), prisa (in a hurry), miedo de (afraid of), cuidado (careful), suerte (lucky), razón (right), no tener razón (wrong). Add <i>mucho/mucha</i> for \"very\": <i>Tengo mucha hambre.</i></li>\n  <li><b>tener que + verb</b> = have to: <i>Tengo que estudiar.</i> · <b>tener ganas de + verb</b> = feel like: <i>Tengo ganas de descansar.</i></li>\n</ul>\n\n<h2>5. Possessive adjectives</h2>\n<table><tr><th>one thing</th><th>more than one</th><th>meaning</th></tr>\n<tr><td>mi</td><td>mis</td><td>my</td></tr>\n<tr><td>tu</td><td>tus</td><td>your (informal)</td></tr>\n<tr><td>su</td><td>sus</td><td>his / her / its / your (formal) / their</td></tr>\n<tr><td>nuestro / nuestra</td><td>nuestros / nuestras</td><td>our</td></tr></table>\n<ul>\n  <li>The possessive <b>matches the thing owned</b>, not the owner: <i><b>Nuestras</b> raquetas</i> (raquetas is feminine plural) · <i><b>Nuestras</b> fotos aparecen en el periódico</i> (foto is feminine even though it ends in -o) · <i><b>nuestros</b> primos</i>.</li>\n  <li><b>tú</b> (with an accent) = you · <b>tu</b> (no accent) = your: <i>Tú tienes tu libro.</i></li>\n</ul>\n\n<h2>6. Verb notes from class</h2>\n<ul>\n  <li><b>asistir a</b> = to attend, and it always takes <b>a</b>: <i>Asisto <b>a</b> clase los lunes y los viernes.</i></li>\n  <li>-er/-ir verbs: comer (eat), beber (drink), correr (run), leer (read), aprender (learn), comprender (understand), creer en (believe in), deber + verb (should), abrir (open), escribir (write), vivir (live), compartir (share), asistir a (attend), recibir (receive), decidir (decide), describir (describe).</li>\n  <li>-ar verbs: estudiar, hablar, practicar, trabajar, tomar, bailar, buscar (look for), caminar, cantar, cenar, comprar, contestar, conversar, desayunar, descansar, desear, dibujar, enseñar, escuchar, esperar, explicar, llegar, llevar, mirar, necesitar, preguntar, preparar, regresar, terminar, viajar.</li>\n  <li><b>gustar:</b> <i>Me gusta</i> + one thing or a verb (<i>Me gusta bailar</i>) · <i>Me gustan</i> + plural things (<i>Me gustan las clases</i>) · <i>¿Te gusta…?</i> · <i>Le gusta…</i></li>\n</ul>\n\n<h2>7. Nouns, articles and adjectives</h2>\n<ul>\n  <li><b>the:</b> el / la / los / las · <b>a, some:</b> un / una / unos / unas</li>\n  <li>-o is usually masculine (el libro), -a is usually feminine (la mesa). Exceptions: <i>el problema, el mapa, el día, el programa</i>; <i>la mano, la foto</i>. Words ending in -dad or -ción are feminine (la universidad, la lección).</li>\n  <li>Plurals: add -s after a vowel (libro → libros), -es after a consonant (profesor → profesores). Exception: lápiz → lápi<b>ces</b>.</li>\n  <li>Adjectives go <b>after</b> the noun and match it: <i>la chica alta, los chicos altos, las profesoras simpáticas</i>. Adjectives ending in -e or a consonant only add -s / -es: <i>inteligente → inteligentes</i>, <i>difícil → difíciles</i>.</li>\n  <li>Nationalities ending in a consonant add -a for feminine: <i>español → española, francés → francesa, alemán → alemana</i>.</li>\n  <li><b>hay</b> = there is / there are: <i>Hay veinte estudiantes en la clase.</i> · <i>No hay</i> = there isn't / aren't.</li>\n</ul>\n\n<h2>8. Questions</h2>\n<ul>\n  <li>¿Qué? (what) · ¿Quién / Quiénes? (who) · ¿Dónde? (where) · ¿Adónde? (to where) · ¿De dónde? (from where) · ¿Cuándo? (when) · ¿Cómo? (how) · ¿Por qué? (why), answered with <i>porque</i> (because) · ¿Cuánto/a? (how much) · ¿Cuántos/as? (how many) · ¿Cuál / Cuáles? (which) · ¿De quién? (whose)</li>\n  <li>Three ways to ask a yes/no question: <i>¿Hablas español?</i> (raise your voice) · <i>¿Hablas tú español?</i> (flip the subject and verb) · <i>Hablas español, ¿verdad? / ¿no?</i> (add a tag)</li>\n</ul>\n\n<h2>9. Telling time</h2>\n<p>Full lesson and endless drills: <button class=\"btn small\" data-mod=\"time\">⏰ Telling time module</button></p>\n<ul>\n  <li><i>¿Qué hora es?</i> → <b>Es la una</b> (only for 1:00–1:59) · <b>Son las</b> dos, tres… (every other hour)</li>\n  <li>Minutes after the hour: <b>y</b> (<i>Son las dos y diez</i> = 2:10). Minutes before: <b>menos</b> (<i>Son las tres menos diez</i> = 2:50).</li>\n  <li><b>y cuarto</b> / y quince = :15 · <b>y media</b> / y treinta = :30 · <b>menos cuarto</b> = :45 (<i>Son las nueve menos cuarto</i> = 8:45) · <b>en punto</b> = on the dot</li>\n  <li>With a clock time: <b>de la</b> mañana / tarde / noche (<i>a las ocho de la mañana</i>). In general, with no clock time: <b>por la</b> mañana (<i>Estudio por la tarde</i>).</li>\n  <li><i>Es mediodía</i> (noon) · <i>Es medianoche</i> (midnight) · <i>¿A qué hora es la clase?</i> → <i>La clase es <b>a las</b> once y media.</i></li>\n</ul>\n\n<h2>10. Numbers (all the way to millions)</h2>\n<p>Full lesson with memory tricks, plus random drills at every size: <button class=\"btn small\" data-mod=\"numbers\">🔢 Numbers module</button></p>\n<ul>\n  <li>0–15: cero, uno, dos, tres, cuatro, cinco, seis, siete, ocho, nueve, diez, once, doce, trece, catorce, quince</li>\n  <li>16–29 are one word: dieciséis, diecisiete, dieciocho, diecinueve, veinte, veintiuno, veintidós, veintitrés… veintinueve</li>\n  <li>31 and up use <b>y</b>, but only between the tens and the ones: treinta y uno, cuarenta y cinco. Tens: treinta, cuarenta, cincuenta, sesenta, setenta, ochenta, noventa.</li>\n  <li><b>cien</b> = exactly 100 · <b>ciento</b> for 101–199 (ciento uno). Hundreds: doscientos, trescientos, cuatrocientos, <b>quinientos</b>, seiscientos, <b>setecientos</b>, ochocientos, <b>novecientos</b> (5, 7 and 9 are the odd ones).</li>\n  <li><b>mil</b> = 1.000 (never \"un mil\") · dos mil · diez mil · cien mil · <b>un millón</b> · dos <b>millones</b> · un millón <b>de</b> dólares</li>\n  <li>Spanish writes thousands with a dot: 45.678 = cuarenta y cinco mil seiscientos setenta y ocho. Years: 2026 = dos mil veintiséis.</li>\n  <li><b>uno</b> becomes <b>un</b> before a masculine noun or mil, and <b>una</b> before a feminine noun: <i>veintiún años, veintiún mil, veintiuna personas</i>.</li>\n</ul>\n\n<h2>11. Days</h2>\n<ul>\n  <li>lunes, martes, miércoles, jueves, viernes, sábado, domingo (no capital letters)</li>\n  <li><b>el lunes</b> = on Monday (this one) · <b>los lunes</b> = on Mondays (every week). You don't need \"en\": <i>Tengo clase los lunes y los miércoles.</i></li>\n  <li><i>¿Qué día es hoy? Hoy es martes.</i> · hoy (today) · mañana (tomorrow) · ayer (yesterday)</li>\n</ul>\n\n<h2>12. Greetings and introductions</h2>\n<table><tr><th>informal (tú)</th><th>formal (usted)</th></tr>\n<tr><td>¿Cómo estás?</td><td>¿Cómo está usted?</td></tr>\n<tr><td>¿Cómo te llamas? Me llamo…</td><td>¿Cómo se llama usted?</td></tr>\n<tr><td>¿De dónde eres? Soy de…</td><td>¿De dónde es usted?</td></tr>\n<tr><td>¿Y tú?</td><td>¿Y usted?</td></tr>\n<tr><td>Te presento a…</td><td>Le presento a…</td></tr></table>\n<p>Answers: (Muy) bien, gracias · Regular · Nada · No muy bien. Meeting someone: Mucho gusto · Encantado/a · El gusto es mío · Igualmente. Goodbyes: Adiós · Hasta luego · Hasta mañana · Hasta pronto · Nos vemos · Chau. Polite phrases: Por favor · (Muchas) gracias · De nada · No hay de qué · Perdón · Con permiso · Lo siento.</p>\n\n<h2>13. Writing section: a paragraph you can adapt</h2>\n<p class=\"panel\"><i>Hola, me llamo Bowen. Soy de ___ y vivo en Wellesley. Tengo veinte años. Soy estudiante en Babson. Estudio negocios y español. Asisto a clase los lunes y los miércoles a las once y media. Mi familia es pequeña: tengo un hermano y dos primos. Mi madre es simpática y trabajadora. Mis primos son de España pero viven en Argentina. Nosotros comemos en la cafetería y estudiamos en la biblioteca. Me gusta escuchar música. ¡Hasta luego!</i></p>\n<p class=\"muted center\">Questions you can't answer? Tap the buttons in the cram plan at the top to drill that topic.</p>\n</div>\n";
 function guide() {
   screen++; onKey = null;
   app.innerHTML = topBar('Study guide') + GUIDE;
@@ -256,6 +258,7 @@ function guide() {
     save(); learn();
   });
   app.querySelectorAll('[data-mod]').forEach(b => b.onclick = () => moduleScreen(b.dataset.mod));
+  app.querySelectorAll('[data-path]').forEach(b => b.onclick = () => pathStep(pathNext()));
 }
 
 function flash(list) {
@@ -683,7 +686,7 @@ function moduleScreen(key) {
     <div class="lv">${m.levels.map((l, k) => `<button class="lvb" data-k="${k}"><b>${esc(l.name)}</b><small>${esc(l.desc)}</small></button>`).join('')}</div></section>`;
   window.scrollTo(0, 0);
   $('jump').onclick = e => { e.preventDefault(); $('practice').scrollIntoView({behavior: 'smooth'}); };
-  app.querySelectorAll('[data-k]').forEach(b => b.onclick = () => drill({title: m.title, gen: m.levels[+b.dataset.k].gen, n: 10, back: () => moduleScreen(key), backName: m.title.slice(2).trim()}));
+  app.querySelectorAll('[data-k]').forEach(b => b.onclick = () => drill({title: m.title, gen: m.levels[+b.dataset.k].gen, n: 10, back: () => moduleScreen(key), backName: m.title.slice(2).trim() + ' levels'}));
 }
 
 function drill(cfg) {
@@ -692,12 +695,14 @@ function drill(cfg) {
   const missed = [];
   const done = () => {
     const again = once(() => drill(cfg)), good = right >= 8;
+    cfg.onEnd?.(right);
     onKey = e => { if (e.key === 'Enter') again(); };
     app.innerHTML = `${topBar(cfg.title)}<section class="panel center"><div class="big">${good ? '🎉' : '💪'}</div><h2>${right} / ${cfg.n} right</h2>
-      <p class="muted">${good ? 'Nice. Go to the next level.' : 'Run it once more, then move on.'}</p>
-      <div class="stack"><button class="btn" id="again">Another round</button><button class="btn ghost" id="back">Back to ${esc(cfg.backName)} levels</button></div></section>
+      <p class="muted">${good ? (cfg.next ? 'Nice. On to the next step.' : 'Nice. Go to the next level.') : cfg.next ? 'Do one more round if you have time. Otherwise keep going, and the end screen will list what to redo.' : 'Run it once more, then move on.'}</p>
+      <div class="stack">${cfg.next ? `<button class="btn" id="nx">${esc(cfg.nextName)} →</button><button class="btn ghost" id="again">Another round</button>` : '<button class="btn" id="again">Another round</button>'}<button class="btn ghost" id="back">Back to ${esc(cfg.backName)}</button></div></section>
       ${missed.length ? `<ul class="review">${missed.map(m => `<li class="no"><b>${esc(m.q.startsWith('🔊') ? m.show.split(' = ')[0] : m.q)}</b><span>${esc(m.show)}</span></li>`).join('')}</ul>` : ''}`;
     $('again').onclick = again;
+    if (cfg.next) { $('nx').onclick = cfg.next; onKey = e => { if (e.key === 'Enter') cfg.next(); }; }
     $('back').onclick = () => { cfg.back(); $('practice')?.scrollIntoView(); };
   };
   const ask = () => {
@@ -711,16 +716,19 @@ function drill(cfg) {
           <div class="between"><button type="button" class="link" id="dk">Show me</button><button class="btn">Check</button></div></form>`}
       <div class="foot" id="foot"></div>`;
     if (it.autoSay) say(it.say);
-    const finish = (ok, typed) => {
+    const finish = (r, typed) => {
+      const ok = !!r, note = typeof r === 'string' ? r : '';
       if (ok) right++; else missed.push(it);
       $('f')?.remove();
-      $('foot').innerHTML = `<div class="res ${ok ? 'good' : 'bad'}"><b>${ok ? '✓ ' + praise() : typed === null ? "Here's the answer" : 'Not quite'}</b>
+      $('foot').innerHTML = `<div class="res ${ok ? 'good' : 'bad'}"><b>${ok ? '✓ ' + (note || praise()) : typed === null ? "Here's the answer" : 'Not quite'}</b>
+        ${ok && note ? `<div>You typed: ${esc(typed)}</div>` : ''}
         ${!ok && typed ? `<div>You typed: <s>${esc(typed)}</s></div>` : ''}
         <div>Answer: <b>${esc(it.show)}</b>${spk(it.sayAns, 'inline')}</div>
         ${it.also ? `<div class="muted alt">Also correct: ${esc(it.also)}</div>` : ''}
         ${it.why ? `<div class="why">💡 ${esc(it.why)}</div>` : ''}
-        <div class="between"><span class="muted">Enter ↵</span><button class="btn" id="cont">Next</button></div></div>`;
+        <div class="between">${!ok && typed && it.self ? '<button class="link" id="mine">I wrote it another way. Count it right</button>' : '<span class="muted">Enter ↵</span>'}<button class="btn" id="cont">Next</button></div></div>`;
       $('cont').onclick = next;
+      if ($('mine')) $('mine').onclick = once(() => { right++; missed.pop(); next(); });
       onKey = e => { if (e.key === 'Enter') { e.preventDefault(); next(); } };
     };
     if (it.choices) {
@@ -745,6 +753,294 @@ function drill(cfg) {
     }
   };
   ask();
+}
+
+// ===== The Path: one straight line from Start to End, covering every midterm topic with typed full sentences. =====
+const fromList = (list, fn) => { let bag = []; return () => { if (!bag.length) bag = shuffle([...list]); return fn(bag.pop()); }; };
+const mix = gens => { let k = 0; return () => gens[k++ % gens.length](); };
+const PRON = {true: /^(yo|tú|él|ella|usted|nosotros|nosotras|ellos|ellas|ustedes) (?=\S)/, false: /^(yo|ella|usted|nosotros|nosotras|ellos|ellas|ustedes) (?=\S)/};
+const normS = (s, acc) => { let t = s.toLowerCase().normalize('NFC'); if (!acc) t = stripAcc(t); return t.replace(/[^a-z0-9áéíóúüñ ]/g, ' ').replace(/\s+/g, ' ').trim().replace(PRON[acc], ''); };
+const sentCheck = answers => v => {
+  if (answers.some(a => normS(a, true) === normS(v, true))) return true;
+  if (answers.some(a => normS(a, false) === normS(v, false))) return 'Right, but check the accents';
+  const t = normS(v, false), best = Math.min(...answers.map(a => lev(t, normS(a, false)) / Math.max(1, normS(a, false).length)));
+  return best <= 0.08 ? 'Close. Compare your spelling with the answer' : false;
+};
+const sentItem = ([en, ...es]) => ({label: 'Write it in Spanish (a full sentence)', q: en, show: es[0], sayAns: es[0], also: es.slice(1).join(' · '), check: sentCheck(es), self: true});
+const dictItem = ([en, ...es]) => ({label: hasTTS ? 'Listen, then type the Spanish you hear' : 'Copy the Spanish', q: hasTTS ? '🔊 Tap the speaker to hear it again' : es[0],
+  sub: hasTTS ? `Meaning: ${en}` : '', say: es[0], autoSay: true, show: es[0], sayAns: es[0], check: sentCheck([es[0]]), self: true});
+const mcq = (label, q, right, wrongs, why, show) => { const choices = shuffle([right, ...wrongs]); return {label, q, choices, correct: choices.indexOf(right), show: show || right, sayAns: show || right, why}; };
+const pairGen = list => fromList(list, ([en, right, wrong, why]) => mcq('Which one is correct?', en, right, [wrong], why));
+const sents = list => [fromList(list, sentItem), fromList(list, sentItem), fromList(list, dictItem)];
+
+const END = {ar: ['o', 'as', 'a', 'amos', 'an'], er: ['o', 'es', 'e', 'emos', 'en'], ir: ['o', 'es', 'e', 'imos', 'en']};
+const IRR = {ser: ['soy', 'eres', 'es', 'somos', 'son'], estar: ['estoy', 'estás', 'está', 'estamos', 'están'], tener: ['tengo', 'tienes', 'tiene', 'tenemos', 'tienen'], venir: ['vengo', 'vienes', 'viene', 'venimos', 'vienen']};
+const AR = [['hablar', 'speak'], ['estudiar', 'study'], ['trabajar', 'work'], ['necesitar', 'need'], ['tomar', 'take'], ['llegar', 'arrive'], ['enseñar', 'teach'], ['escuchar', 'listen'], ['bailar', 'dance'], ['buscar', 'look for'], ['comprar', 'buy'], ['regresar', 'return'], ['preguntar', 'ask'], ['caminar', 'walk'], ['esperar', 'wait'], ['mirar', 'look at'], ['cantar', 'sing'], ['practicar', 'practice'], ['desear', 'wish'], ['viajar', 'travel']];
+const ERIR = [['comer', 'eat'], ['correr', 'run'], ['leer', 'read'], ['aprender', 'learn'], ['beber', 'drink'], ['comprender', 'understand'], ['creer', 'believe'], ['deber', 'should'], ['vivir', 'live'], ['escribir', 'write'], ['abrir', 'open'], ['compartir', 'share'], ['asistir', 'attend'], ['recibir', 'receive'], ['decidir', 'decide'], ['describir', 'describe']];
+const conjGen = verbs => () => {
+  const [v, en] = pickOne(verbs), k = rnd(0, 4), s = pickOne([['yo'], ['tú'], ['él', 'ella', 'usted'], ['nosotros'], ['ellos', 'ellas', 'ustedes']][k]);
+  const form = IRR[v] ? IRR[v][k] : v.slice(0, -2) + END[v.slice(-2)][k];
+  return {label: 'Conjugate the verb', q: `${s} + ${v}`, sub: `${v} = to ${en}`, show: `${s} ${form}`, sayAns: `${s} ${form}`, check: sentCheck([form, `${s} ${form}`]),
+    why: IRR[v] ? `${v} is irregular: ${IRR[v].join(', ')}` : `-${v.slice(-2)} endings: ${END[v.slice(-2)].map(e => '-' + e).join(', ')}`};
+};
+const IRRV = [['ser', 'be'], ['estar', 'be'], ['tener', 'have'], ['venir', 'come']];
+const CUBE = n => NUM_LEVELS[n].gen, TL = n => TIME_LEVELS[n].gen;
+
+const P_GREET = [
+  ['Hi! My name is Bowen.', '¡Hola! Me llamo Bowen.', 'Hola, me llamo Bowen.', 'Hola, mi nombre es Bowen.'],
+  ['Nice to meet you.', 'Mucho gusto.', 'Encantado.', 'Encantada.'],
+  ['How are you? (to a friend)', '¿Cómo estás?', '¿Qué tal?'],
+  ['How are you? (to a professor)', '¿Cómo está usted?', '¿Cómo está?'],
+  ['Very well, thanks. And you? (to a friend)', 'Muy bien, gracias. ¿Y tú?'],
+  ['What is your name? (to a friend)', '¿Cómo te llamas?', '¿Cómo te llamas tú?'],
+  ['What is your name? (formal)', '¿Cómo se llama usted?', '¿Cómo se llama?'],
+  ['Where are you from? (to a friend)', '¿De dónde eres?', '¿De dónde eres tú?'],
+  ['I am from Boston.', 'Soy de Boston.'],
+  ['The pleasure is mine.', 'El gusto es mío.'],
+  ['See you tomorrow.', 'Hasta mañana.'],
+  ['I want to introduce you to my friend Ana. (to a friend)', 'Te presento a mi amiga Ana.'],
+];
+const P_NOUNS = [['libro', 'el', '-o → el'], ['mesa', 'la', '-a → la'], ['mapa', 'el', 'Exception: el mapa (ends in -a but is masculine)'], ['día', 'el', 'Exception: el día'],
+  ['problema', 'el', 'Words ending in -ma are masculine: el problema, el programa'], ['mano', 'la', 'Exception: la mano (ends in -o but is feminine)'], ['lección', 'la', '-ción → la'],
+  ['universidad', 'la', '-dad → la'], ['foto', 'la', 'la foto (short for la fotografía)'], ['programa', 'el', '-ma → el'], ['computadora', 'la', '-a → la'], ['diccionario', 'el', '-o → el'],
+  ['mujer', 'la', 'a woman → la'], ['hombre', 'el', 'a man → el'], ['conversación', 'la', '-ción → la'], ['nacionalidad', 'la', '-dad → la'], ['tarea', 'la', '-a → la'], ['cuaderno', 'el', '-o → el']];
+const P_HAY = [
+  ['There are twenty students in the class.', 'Hay veinte estudiantes en la clase.', 'Hay 20 estudiantes en la clase.'],
+  ['There is a map in the classroom.', 'Hay un mapa en el salón de clase.', 'Hay un mapa en la clase.'],
+  ['Is there a dictionary?', '¿Hay un diccionario?'],
+  ['There are no computers.', 'No hay computadoras.'],
+  ['The pencils (plural of el lápiz)', 'Los lápices.'],
+  ['The lessons (plural of la lección)', 'Las lecciones.'],
+  ['There are three books on the table.', 'Hay tres libros en la mesa.'],
+  ['some notebooks', 'unos cuadernos'],
+];
+const P_DAYS = [
+  ['Today is Monday.', 'Hoy es lunes.'],
+  ['What day is today?', '¿Qué día es hoy?'],
+  ['Tomorrow is Tuesday.', 'Mañana es martes.'],
+  ['I have Spanish class on Mondays and Wednesdays.', 'Tengo clase de español los lunes y los miércoles.', 'Tengo clase de español los lunes y miércoles.'],
+  ['On Tuesdays I study in the library.', 'Los martes estudio en la biblioteca.', 'Estudio en la biblioteca los martes.'],
+  ['The exam is on Monday at ten in the morning.', 'El examen es el lunes a las diez de la mañana.'],
+  ['I attend class on Mondays and Fridays.', 'Asisto a clase los lunes y los viernes.', 'Asisto a clase los lunes y viernes.'],
+  ['At what time is the Spanish class?', '¿A qué hora es la clase de español?'],
+  ['The class is at eleven thirty.', 'La clase es a las once y media.', 'La clase es a las once y treinta.'],
+  ['I study in the afternoon.', 'Estudio por la tarde.'],
+];
+const P_DAYMC = [['on Mondays (every week)', 'los lunes', 'el lunes', 'los + day = every week'], ['on Monday (this one)', 'el lunes', 'en lunes', 'el + day = this one; never "en"'],
+  ['at one o\'clock', 'a la una', 'a las una', 'one o\'clock is singular: a la una'], ['in the morning (no clock time)', 'por la mañana', 'de la mañana', 'no clock time → por la mañana'],
+  ['at 8 in the morning', 'a las ocho de la mañana', 'a las ocho por la mañana', 'with a clock time → de la mañana']];
+const P_AR = [
+  ['I study Spanish and business.', 'Estudio español y negocios.'],
+  ['I work on Saturdays.', 'Trabajo los sábados.'],
+  ['We speak Spanish in class.', 'Hablamos español en la clase.', 'Hablamos español en clase.'],
+  ['My friend needs a calculator.', 'Mi amigo necesita una calculadora.', 'Mi amiga necesita una calculadora.'],
+  ['I take four classes this semester.', 'Tomo cuatro clases este semestre.'],
+  ['I arrive at the university at nine.', 'Llego a la universidad a las nueve.'],
+  ['The professor (woman) teaches Spanish.', 'La profesora enseña español.'],
+  ['They listen to music.', 'Escuchan música.'],
+  ['I like to study in the library.', 'Me gusta estudiar en la biblioteca.'],
+  ['I don\'t like to sing.', 'No me gusta cantar.'],
+  ['Do you like to dance? (to a friend)', '¿Te gusta bailar?'],
+  ['I like the classes.', 'Me gustan las clases.'],
+];
+const P_GUSTA = [['I like the class.', 'Me gusta la clase.', 'Me gustan la clase.', 'one thing → gusta'], ['I like the classes.', 'Me gustan las clases.', 'Me gusta las clases.', 'plural things → gustan'],
+  ['I like to dance.', 'Me gusta bailar.', 'Me gustan bailar.', 'a verb → gusta'], ['I don\'t speak French.', 'No hablo francés.', 'Hablo no francés.', '"no" goes right before the verb']];
+const P_Q = [
+  ['Where is the library?', '¿Dónde está la biblioteca?'],
+  ['What time is it?', '¿Qué hora es?'],
+  ['How many students are there?', '¿Cuántos estudiantes hay?'],
+  ['How many classes do you take? (to a friend)', '¿Cuántas clases tomas?'],
+  ['Who is your professor? (to a friend)', '¿Quién es tu profesor?', '¿Quién es tu profesora?'],
+  ['Why do you study Spanish? (to a friend)', '¿Por qué estudias español?'],
+  ['Because I need Spanish.', 'Porque necesito español.', 'Porque necesito el español.'],
+  ['Do you speak English? (to a friend)', '¿Hablas inglés?', '¿Hablas tú inglés?'],
+  ['What do you study? (to a friend)', '¿Qué estudias?'],
+  ['When is the exam?', '¿Cuándo es el examen?'],
+  ['You work on Mondays, right? (to a friend)', 'Trabajas los lunes, ¿verdad?', 'Trabajas los lunes, ¿no?'],
+];
+const P_QMC = [['how many classes?', '¿Cuántas clases?', '¿Cuántos clases?', 'clases is feminine → cuántas'], ['how many students?', '¿Cuántos estudiantes?', '¿Cuántas estudiantes?', 'a mixed group → cuántos'],
+  ['why? / because', '¿Por qué? / Porque', '¿Porque? / Por qué', 'question = por qué (two words, accent); answer = porque'], ['from where?', '¿De dónde?', '¿Dónde de?', 'de goes first: ¿De dónde eres?'],
+  ['who? (more than one)', '¿Quiénes?', '¿Quién?', 'plural who → quiénes']];
+const P_LOC = [
+  ['The library is next to the cafeteria.', 'La biblioteca está al lado de la cafetería.'],
+  ['The book is on top of the table.', 'El libro está encima de la mesa.'],
+  ['I am in the library.', 'Estoy en la biblioteca.'],
+  ['The backpack is under the chair.', 'La mochila está debajo de la silla.'],
+  ['My house is far from the university.', 'Mi casa está lejos de la universidad.'],
+  ['The bookstore is near the cafeteria.', 'La librería está cerca de la cafetería.'],
+  ['Where is the bathroom?', '¿Dónde está el baño?'],
+  ['The lab is next to the gym.', 'El laboratorio está al lado del gimnasio.'],
+  ['We are in class.', 'Estamos en clase.', 'Estamos en la clase.'],
+  ['I am tired today.', 'Estoy cansado hoy.', 'Estoy cansada hoy.', 'Hoy estoy cansado.', 'Hoy estoy cansada.'],
+];
+const P_ADJ = [['My mother is nice. (simpático)', 'Mi madre es simpática.', 'Mi madre es simpático.', 'feminine noun → -a'],
+  ['My cousins are tall. (alto)', 'Mis primos son altos.', 'Mis primos son alto.', 'plural → -os'], ['The classes are difficult. (difícil)', 'Las clases son difíciles.', 'Las clases son difícil.', 'ends in a consonant → add -es'],
+  ['My grandfather is hardworking. (trabajador)', 'Mi abuelo es trabajador.', 'Mi abuelo es trabajadora.', 'masculine → no -a'], ['My sister is intelligent. (inteligente)', 'Mi hermana es inteligente.', 'Mi hermana es inteligenta.', '-e adjectives don\'t change for gender'],
+  ['They (women) are Spanish. (español)', 'Ellas son españolas.', 'Ellas son españoles.', 'nationalities: español → española → españolas'], ['My aunts are blond. (rubio)', 'Mis tías son rubias.', 'Mis tías son rubios.', 'feminine plural → -as'],
+  ['It is a good book. (bueno)', 'Es un buen libro.', 'Es un bueno libro.', 'before a masculine noun, bueno → buen'], ['She is Mexican.', 'Ella es mexicana.', 'Ella es mexicano.', 'feminine → -a']];
+const P_FAM = [
+  ['My family is big.', 'Mi familia es grande.'],
+  ['I have two brothers and one sister.', 'Tengo dos hermanos y una hermana.'],
+  ['My mother is a doctor.', 'Mi madre es doctora.', 'Mi mamá es doctora.'],
+  ['My father is tall and nice.', 'Mi padre es alto y simpático.', 'Mi papá es alto y simpático.'],
+  ['My grandparents live in China.', 'Mis abuelos viven en China.'],
+  ['My sister is intelligent and hardworking.', 'Mi hermana es inteligente y trabajadora.'],
+  ['My brother is fifteen years old.', 'Mi hermano tiene quince años.', 'Mi hermano tiene 15 años.'],
+  ['I don\'t have a dog.', 'No tengo perro.', 'No tengo un perro.'],
+  ['My cousins (women) are Spanish.', 'Mis primas son españolas.'],
+  ['My uncle is an engineer.', 'Mi tío es ingeniero.'],
+];
+const P_POSMC = [['our photos', 'nuestras fotos', 'nuestros fotos', 'foto is feminine (la foto) → nuestras'], ['my books', 'mis libros', 'mi libros', 'plural thing → mis'],
+  ['your sister (informal)', 'tu hermana', 'tú hermana', 'tu (no accent) = your; tú = you'], ['his parents', 'sus padres', 'su padres', 'plural thing → sus'],
+  ['our university', 'nuestra universidad', 'nuestro universidad', 'la universidad → nuestra'], ['their house', 'su casa', 'sus casa', 'one thing → su (even if many owners)'],
+  ['our cousins (mixed)', 'nuestros primos', 'nuestras primos', 'los primos → nuestros'], ['our rackets', 'nuestras raquetas', 'nuestros raquetas', 'las raquetas → nuestras']];
+const P_POS = [
+  ['Our photos appear in the newspaper.', 'Nuestras fotos aparecen en el periódico.'],
+  ['My parents are nice.', 'Mis padres son simpáticos.'],
+  ['Your sister is tall. (to a friend)', 'Tu hermana es alta.'],
+  ['Their house is big.', 'Su casa es grande.'],
+  ['Our university is in Massachusetts.', 'Nuestra universidad está en Massachusetts.'],
+  ['His friends are from Mexico.', 'Sus amigos son de México.'],
+  ['You have your book. (to a friend)', 'Tú tienes tu libro.'],
+];
+const P_ERIR = [
+  ['I am twenty years old.', 'Tengo veinte años.', 'Tengo 20 años.'],
+  ['I am twenty-one years old.', 'Tengo veintiún años.', 'Tengo 21 años.'],
+  ['How old are you? (to a friend)', '¿Cuántos años tienes?'],
+  ['I\'m very hungry.', 'Tengo mucha hambre.'],
+  ['I\'m in a hurry.', 'Tengo prisa.'],
+  ['I have to study tonight.', 'Tengo que estudiar esta noche.'],
+  ['I feel like eating pizza.', 'Tengo ganas de comer pizza.'],
+  ['I come to the university on Mondays.', 'Vengo a la universidad los lunes.'],
+  ['We eat in the cafeteria.', 'Comemos en la cafetería.'],
+  ['We live in Boston.', 'Vivimos en Boston.'],
+  ['I write in my notebook.', 'Escribo en mi cuaderno.'],
+  ['My friends run in the park.', 'Mis amigos corren en el parque.'],
+  ['We share a room.', 'Compartimos un cuarto.'],
+  ['You are right. (to a friend)', 'Tienes razón.'],
+];
+const P_TRAPS = [['I am 20 years old.', 'Tengo 20 años.', 'Soy 20 años.', 'Age uses tener, never ser'], ['I am 21.', 'Tengo veintiún años.', 'Tengo veintiuno años.', 'uno → un before a noun: veintiún años'],
+  ['our photos', 'nuestras fotos', 'nuestros fotos', 'la foto is feminine'], ['I attend class on Mondays.', 'Asisto a clase los lunes.', 'Asisto clase los lunes.', 'asistir always takes a'],
+  ['My cousins are from Spain but live in Argentina.', 'Mis primos son de España pero viven en Argentina.', 'Mis primos están de España pero viven en Argentina.', 'origin = ser de; where you live = vivir en'],
+  ['we live', 'nosotros vivimos', 'nosotros vivemos', '-ir nosotros → -imos'], ['we eat', 'nosotros comemos', 'nosotros comimos', '-er nosotros → -emos (comimos is past tense, not on the test)'],
+  ['we write', 'nosotros escribimos', 'nosotros escribemos', '-ir nosotros → -imos'], ['What is your name? (to a friend)', '¿Cómo te llamas tú?', '¿Cómo te llamas tu?', 'tú = you (accent); tu = your'],
+  ['your book', 'tu libro', 'tú libro', 'tu (no accent) = your'], ['they come', 'ellos vienen', 'ellos venen', 'venir: vengo, vienes, viene, venimos, vienen'], ['I have', 'yo tengo', 'yo teno', 'tener: tengo, tienes, tiene, tenemos, tienen']];
+const P_ESSAY = [
+  ['My name is Bowen and I am a student at Babson.', 'Me llamo Bowen y soy estudiante en Babson.', 'Me llamo Bowen y soy estudiante de Babson.'],
+  ['I am from ___ and I live in Wellesley. (use Boston)', 'Soy de Boston y vivo en Wellesley.'],
+  ['I study business and Spanish.', 'Estudio negocios y español.'],
+  ['On Mondays I have class at nine in the morning.', 'Los lunes tengo clase a las nueve de la mañana.'],
+  ['I also work in the library.', 'También trabajo en la biblioteca.'],
+  ['My favorite class is Spanish because the professor (woman) is nice.', 'Mi clase favorita es español porque la profesora es simpática.'],
+  ['In the afternoon I eat in the cafeteria with my friends.', 'Por la tarde como en la cafetería con mis amigos.'],
+  ['At night I study and read.', 'Por la noche estudio y leo.'],
+  ['Spanish is difficult but interesting.', 'El español es difícil pero interesante.'],
+  ['I am tired because I have a lot of homework.', 'Estoy cansado porque tengo mucha tarea.', 'Estoy cansada porque tengo mucha tarea.'],
+  ['My roommate is from California.', 'Mi compañero de cuarto es de California.'],
+  ['My family is small: I have one brother.', 'Mi familia es pequeña: tengo un hermano.', 'Mi familia es pequeña. Tengo un hermano.'],
+  ['We eat in the cafeteria and we study in the library.', 'Comemos en la cafetería y estudiamos en la biblioteca.'],
+  ['I like to listen to music.', 'Me gusta escuchar música.'],
+];
+
+const L = (h, body) => `<h2>${h}</h2>${body}`;
+const STEPS = [
+  {t: 'Greetings and introductions', tag: 'Lesson 1', lesson: L('👋 Greetings and introductions', `<table><tr><th>to a friend (tú)</th><th>formal (usted)</th></tr>
+    <tr><td>¿Cómo estás?</td><td>¿Cómo está usted?</td></tr><tr><td>¿Cómo te llamas? → Me llamo…</td><td>¿Cómo se llama usted?</td></tr>
+    <tr><td>¿De dónde eres? → Soy de…</td><td>¿De dónde es usted?</td></tr><tr><td>¿Y tú?</td><td>¿Y usted?</td></tr><tr><td>Te presento a…</td><td>Le presento a…</td></tr></table>
+    <p>Meeting someone: <b>Mucho gusto</b> · Encantado/a · <b>El gusto es mío</b> · Igualmente. Goodbyes: Adiós · Hasta luego · Hasta mañana · Nos vemos. Polite: Por favor · Gracias · De nada · Perdón · Con permiso · Lo siento.</p>
+    <p>💡 In every practice sentence, the subject (yo, tú…) is optional. Spanish usually drops it, so <i>Soy de Boston</i> and <i>Yo soy de Boston</i> both count.</p>`), gens: sents(P_GREET)},
+  {t: 'Nouns, el/la and hay', tag: 'Lesson 1', lesson: L('📚 Nouns, articles and hay', `<ul><li><b>the:</b> el / la / los / las · <b>a, some:</b> un / una / unos / unas</li>
+    <li>-o is usually el, -a is usually la. Exceptions: <b>el</b> mapa, <b>el</b> día, <b>el</b> problema, <b>el</b> programa · <b>la</b> mano, <b>la</b> foto. -dad and -ción are always la (la universidad, la lección).</li>
+    <li>Plurals: add -s after a vowel (libros), -es after a consonant (profesores). lápiz → lápi<b>ces</b>; lección → lecciones (the accent goes away).</li>
+    <li><b>hay</b> = there is / there are · <b>no hay</b> = there isn't / aren't · <b>¿Hay…?</b> = Is there…?</li></ul>`),
+    gens: [fromList(P_NOUNS, ([n, a, why]) => mcq('el or la?', `___ ${n}`, a, [a === 'el' ? 'la' : 'el'], why, `${a} ${n}`)), fromList(P_HAY, sentItem)]},
+  {t: 'Numbers 0–100', tag: 'Lessons 1–2', lesson: NUM_LESSON.split('<h3>Step 5')[0], gens: [CUBE(0), CUBE(1), CUBE(1), () => numHear(rnd(0, 100))]},
+  {t: 'Numbers 100 to millions', tag: 'Lesson 2', lesson: '<h2>🔢 Big numbers</h2><h3>Step 5' + NUM_LESSON.split('<h3>Step 5')[1], gens: [CUBE(2), CUBE(3), CUBE(4), CUBE(5), CUBE(6), () => numHear(pickOne([rnd(100, 999), year(), rnd(1000, 99999), rnd(1, 9) * 1e6]))]},
+  {t: 'Telling time', tag: 'Lesson 1', lesson: TIME_LESSON, gens: [TL(0), TL(1), TL(2), TL(3), TL(5)]},
+  {t: 'Days, schedule and "at what time?"', tag: 'Lessons 1–2', lesson: L('📅 Days and your schedule', `<ul><li>lunes, martes, miércoles, jueves, viernes, sábado, domingo (no capital letters)</li>
+    <li><b>el lunes</b> = on Monday (this one) · <b>los lunes</b> = on Mondays (every week). Never use "en" with days.</li>
+    <li>¿Qué día es hoy? → Hoy es martes. · mañana = tomorrow</li>
+    <li>¿A qué hora es la clase? → La clase es <b>a las</b> once (<b>a la</b> una).</li>
+    <li>With a clock time: <b>de la</b> mañana/tarde/noche. With no clock time: <b>por la</b> mañana/tarde/noche.</li></ul>`), gens: [...sents(P_DAYS), pairGen(P_DAYMC), TL(4)]},
+  {t: '-ar verbs and gustar', tag: 'Lesson 2', lesson: L('🗣️ -ar verbs and gustar', `<table><tr><th></th><th>hablar</th></tr><tr><td>yo</td><td>habl<b>o</b></td></tr><tr><td>tú</td><td>habl<b>as</b></td></tr>
+    <tr><td>él / ella / usted</td><td>habl<b>a</b></td></tr><tr><td>nosotros</td><td>habl<b>amos</b></td></tr><tr><td>ellos / ellas / ustedes</td><td>habl<b>an</b></td></tr></table>
+    <p>💡 <b>o, as, a, amos, an.</b> Put <b>no</b> right before the verb: <i>No trabajo.</i> Vosotros (habláis) isn't tested.</p>
+    <p><b>gustar:</b> <i>Me gusta</i> + one thing or a verb (<i>Me gusta bailar</i>) · <i>Me gust<b>an</b></i> + plural things (<i>Me gustan las clases</i>) · <i>¿Te gusta…?</i> (you) · <i>Le gusta…</i> (he/she)</p>`),
+    gens: [conjGen(AR), ...sents(P_AR), pairGen(P_GUSTA)]},
+  {t: 'Asking questions', tag: 'Lesson 2', lesson: L('❓ Questions', `<p>¿Qué? what · ¿Quién/Quiénes? who · ¿Dónde? where · ¿De dónde? from where · ¿Adónde? to where · ¿Cuándo? when · ¿Cómo? how · ¿Por qué? why (answer: <b>porque</b>) · ¿Cuánto/a? how much · ¿Cuántos/as? how many · ¿Cuál/Cuáles? which</p>
+    <p>Yes/no questions: <i>¿Hablas español?</i> · <i>¿Hablas tú español?</i> · <i>Hablas español, ¿verdad? / ¿no?</i></p><p>💡 Every question word has an accent, and the question starts with <b>¿</b>.</p>`),
+    gens: [...sents(P_Q), pairGen(P_QMC)]},
+  {t: 'Ser and estar forms, plus location', tag: 'Lessons 1–2', lesson: L('📍 Ser and estar forms, plus where things are', `<table><tr><th></th><th>ser</th><th>estar</th></tr><tr><td>yo</td><td>soy</td><td>estoy</td></tr><tr><td>tú</td><td>eres</td><td>estás</td></tr>
+    <tr><td>él / ella / usted</td><td>es</td><td>está</td></tr><tr><td>nosotros</td><td>somos</td><td>estamos</td></tr><tr><td>ellos / ellas / ustedes</td><td>son</td><td>están</td></tr></table>
+    <p><b>Location uses estar:</b> al lado de (next to) · cerca de (near) · lejos de (far from) · encima de (on top of) · debajo de (under) · delante de (in front of) · detrás de (behind) · a la derecha / izquierda de (right / left of) · entre (between) · en (in, on)</p>
+    <p>💡 <b>de + el = del</b>: al lado <b>del</b> gimnasio (but al lado <b>de la</b> cafetería).</p>`), gens: [conjGen(IRRV.slice(0, 2)), ...sents(P_LOC)]},
+  {t: 'Ser vs. estar', tag: 'Lessons 1–3', lesson: SE_LESSON, gens: [SE_LEVELS[0].gen, SE_LEVELS[1].gen]},
+  {t: 'Family and adjectives', tag: 'Lesson 3', lesson: L('👨‍👩‍👧 Family and adjectives', `<p>padre/madre (papá/mamá) · hermano/a · hijo/a · abuelo/a · tío/a · primo/a · sobrino/a · esposo/a · novio/a · amigo/a · los padres = parents</p>
+    <ul><li>Adjectives go <b>after</b> the noun and <b>match it</b> in gender and number: el chico alt<b>o</b>, la chica alt<b>a</b>, los chicos alt<b>os</b>, las chicas alt<b>as</b>.</li>
+    <li>-e and most consonant endings don't change for gender, they only add -s / -es: inteligente(s), difícil(es), trabajador → trabajador<b>a</b> (exception).</li>
+    <li>Nationalities: español → español<b>a</b>, francés → frances<b>a</b>, mexicano → mexican<b>a</b>.</li>
+    <li>bueno and malo can go first and drop the -o: <b>buen</b> libro, <b>buena</b> profesora.</li></ul>`), gens: [pairGen(P_ADJ), ...sents(P_FAM)]},
+  {t: 'Possessives (mi, tu, su, nuestro)', tag: 'Lesson 3', lesson: L('🔑 Possessives', `<table><tr><th>one thing</th><th>more than one</th><th>meaning</th></tr><tr><td>mi</td><td>mis</td><td>my</td></tr><tr><td>tu</td><td>tus</td><td>your (informal)</td></tr>
+    <tr><td>su</td><td>sus</td><td>his / her / your (formal) / their</td></tr><tr><td>nuestro / nuestra</td><td>nuestros / nuestras</td><td>our</td></tr></table>
+    <p>💡 The possessive matches the <b>thing owned</b>, not the owner: <i><b>Nuestras</b> fotos aparecen en el periódico</i> (la foto is feminine). <b>tu</b> = your, <b>tú</b> = you.</p>`), gens: [pairGen(P_POSMC), ...sents(P_POS)]},
+  {t: '-er/-ir verbs, tener and venir', tag: 'Lesson 3', lesson: L('🍽️ -er/-ir verbs, tener and venir', `<table><tr><th></th><th>comer</th><th>vivir</th><th>tener</th><th>venir</th></tr>
+    <tr><td>yo</td><td>com<b>o</b></td><td>viv<b>o</b></td><td>tengo</td><td>vengo</td></tr><tr><td>tú</td><td>com<b>es</b></td><td>viv<b>es</b></td><td>tienes</td><td>vienes</td></tr>
+    <tr><td>él / ella / usted</td><td>com<b>e</b></td><td>viv<b>e</b></td><td>tiene</td><td>viene</td></tr><tr><td>nosotros</td><td>com<b>emos</b></td><td>viv<b>imos</b></td><td>tenemos</td><td>venimos</td></tr>
+    <tr><td>ellos / ellas / ustedes</td><td>com<b>en</b></td><td>viv<b>en</b></td><td>tienen</td><td>vienen</td></tr></table>
+    <p>💡 -er and -ir are the same except for nosotros: com<b>emos</b> vs. viv<b>imos</b>.</p>
+    <p><b>tener expressions:</b> tener ___ años (age) · hambre (hungry) · sed (thirsty) · sueño (sleepy) · frío / calor (cold / hot) · prisa (in a hurry) · miedo (afraid) · razón (right) · suerte (lucky) · <b>tener que</b> + verb (have to) · <b>tener ganas de</b> + verb (feel like)</p>`),
+    gens: [conjGen(ERIR), conjGen(IRRV.slice(2)), ...sents(P_ERIR)]},
+  {t: 'The Oct 19 class traps', tag: 'Class notes', lesson: L('⚠️ What the professor stressed on Oct 19', `<ul><li>Age uses <b>tener</b>: <i>Tengo 20 años</i>, never <s>Soy 20 años</s>. · <b>veintiún años</b>, not <s>veintiuno años</s>.</li>
+    <li><b>nuestras fotos</b>: the possessive matches the thing owned. · <b>tú</b> = you, <b>tu</b> = your.</li>
+    <li>-er vs. -ir nosotros: com<b>emos</b> / viv<b>imos</b>. · <b>asistir a</b> clase (always with a).</li>
+    <li>Origin uses <b>ser de</b>, and where you live uses <b>vivir en</b>: <i>Mis primos son de España pero viven en Argentina.</i></li>
+    <li>Exam verbs: all -ar verbs, the -er/-ir verbs, plus tener, venir, ser and estar. No past tense. Vosotros isn't tested, but you get credit if it's correct.</li></ul>`),
+    gens: [pairGen(P_TRAPS)]},
+  {t: 'Writing: sentences for your paragraph', tag: 'Writing section', essay: true, lesson: L('✍️ The writing section', `<p>Build your paragraph from sentences you already know. Use this order: <b>who you are → where you're from → age → what you study → your schedule → your family → what you like</b>.
+    Connect the sentences with <b>y</b> (and), <b>pero</b> (but), <b>porque</b> (because), <b>también</b> (also), and <b>por la mañana / tarde / noche</b>.</p>
+    <p class="panel"><i>Hola, me llamo Bowen. Soy de Boston y vivo en Wellesley. Tengo veinte años. Soy estudiante en Babson. Estudio negocios y español. Asisto a clase los lunes y los miércoles a las once y media. Mi familia es pequeña: tengo un hermano y dos primos. Mi madre es simpática y trabajadora. Mis primos son de España pero viven en Argentina. Por la tarde como en la cafetería con mis amigos y por la noche estudio en la biblioteca. Me gusta escuchar música. ¡Hasta luego!</i></p>
+    <p class="muted">Change the details to your own. Each sentence on its own is the kind you've already practiced.</p>`), gens: sents(P_ESSAY)},
+];
+
+const ESSAY_CHECKS = [['Your name (Me llamo…)', /me llamo|mi nombre es/], ['Where you are from (Soy de…)', /soy de/], ['Your age with tener (Tengo… años)', /tengo .*anos/],
+  ['What you study (Estudio…)', /estudio/], ['A day (los lunes…)', /lunes|martes|miercoles|jueves|viernes|sabado|domingo/], ['A time (a las…)', /a las? /],
+  ['Your family (mi familia, mis padres…)', /familia|padre|madre|herman|prim|abuel/], ['A description with ser (es simpática, son altos…)', /\b(es|son|soy|somos) (muy )?(alt|baj|simpatic|antipatic|trabajador|inteligente|grande|pequen|buen|mal|rubi|moren|bonit|guap|interesante|dificil|facil|joven|viej|delgad|gord|amable|divertid|serio|seria|tont|list|simpl)/],
+  ['estar (estoy, está…)', /\b(estoy|esta|estamos|estan|estas)\b/], ['Me gusta…', /me gusta/], ['A connector (pero, porque, también)', /\b(pero|porque|tambien)\b/]];
+function essayBox() {
+  const box = document.createElement('section'); box.className = 'panel'; box.style.marginTop = '16px';
+  box.innerHTML = `<h2>Final check: write your own paragraph</h2><p class="muted">Write 8–10 sentences about yourself. Each item ticks off as you use it. It saves on this device.</p>
+    <textarea id="essay" class="inp" rows="9" lang="es" spellcheck="false" placeholder="Hola, me llamo…"></textarea><ul id="ess" class="review"></ul>`;
+  const ta = box.querySelector('#essay'), ul = box.querySelector('#ess');
+  const tick = () => { const t = ' ' + stripAcc(ta.value.toLowerCase()) + ' '; S.essay = ta.value; save();
+    ul.innerHTML = ESSAY_CHECKS.map(([n, re]) => `<li class="${re.test(t) ? 'ok' : ''}">${re.test(t) ? '✅' : '⬜'} ${esc(n)}</li>`).join(''); };
+  ta.value = S.essay || ''; ta.oninput = tick; tick();
+  return box;
+}
+
+const pathNext = () => Math.min(S.at || 0, STEPS.length);
+function pathStep(i) {
+  screen++; onKey = null; S.at = i; save();
+  if (i >= STEPS.length) return pathEnd();
+  const st = STEPS[i];
+  app.innerHTML = `${topBar(`Step ${i + 1} of ${STEPS.length}`, esc(st.tag))}<div class="bar"><i style="width:${i / STEPS.length * 100}%"></i></div>
+    <div class="g">${st.lesson}</div>
+    <div class="stack"><button class="btn" id="go">Practice this: 10 questions →</button>${i ? '<button class="link" id="prev">← Previous step</button>' : ''}</div>`;
+  window.scrollTo(0, 0);
+  if (st.essay) app.querySelector('.stack').before(essayBox());
+  $('go').onclick = () => drill({title: `${i + 1}. ${st.t}`, gen: mix(st.gens), n: 10, back: () => pathStep(i), backName: 'the lesson',
+    onEnd: r => { S.path[i] = Math.max(S.path[i] || 0, r); save(); },
+    next: () => pathStep(i + 1), nextName: i + 1 < STEPS.length ? `Next: ${STEPS[i + 1].t}` : 'Finish'});
+  $('prev') && ($('prev').onclick = () => pathStep(i - 1));
+}
+function pathEnd() {
+  screen++; onKey = null;
+  const weak = STEPS.map((s, k) => [s, k]).filter(([, k]) => !(S.path[k] >= 8));
+  app.innerHTML = `${topBar('The end')}<section class="panel center"><div class="big">🏁</div><h2>You finished the path.</h2>
+    <p>That's everything on the midterm: Lessons 1–3 plus the Oct 19 notes. ${weak.length ? 'Redo these once, since you scored under 8/10:' : 'You got 8/10 or better on every step. You\'re ready. ¡Buena suerte el lunes!'}</p>
+    ${weak.length ? `<div class="stack">${weak.map(([s, k]) => `<button class="btn ghost" data-step="${k}">${k + 1}. ${esc(s.t)}</button>`).join('')}</div>` : ''}
+    <div class="stack"><button class="btn ghost" id="restart">Start over from step 1</button><button class="btn ghost" data-home>Home</button></div></section>`;
+  app.querySelectorAll('[data-step]').forEach(b => b.onclick = () => pathStep(+b.dataset.step));
+  $('restart').onclick = () => { S.path = {}; pathStep(0); };
 }
 
 
