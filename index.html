@@ -57,8 +57,6 @@ button{font:inherit;cursor:pointer;border:0;border-radius:12px;color:inherit}
 .face.b{transform:rotateY(180deg)}
 .face .txt{font-size:clamp(22px,5vw,32px);font-weight:600}
 .hint{position:absolute;bottom:12px;left:0;right:0;color:var(--muted);font-size:13px}
-.spk{position:absolute;top:12px;right:12px;background:var(--brand2);width:44px;height:44px;border-radius:50%;font-size:20px}
-.spk.inline{position:static;width:34px;height:34px;font-size:15px;vertical-align:middle;margin-left:6px}
 .sort{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .keys{font-size:13px;margin-top:14px}
 .q{background:var(--card);border-radius:var(--r);padding:22px;box-shadow:var(--sh);margin:16px 0;position:relative}
@@ -127,27 +125,14 @@ const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;',
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const once = fn => { let done = false; return (...x) => { if (!done) { done = true; fn(...x); } }; };
 const praise = () => ['¡Muy bien!', '¡Excelente!', '¡Perfecto!', 'Nice!', 'Great job!'][Math.random() * 5 | 0];
-const spk = (t, cls = '') => `<button class="spk ${cls}" data-say="${esc(t)}" aria-label="Listen">🔊</button>`;
 const topBar = (title, right = '') => `<header><button class="x" data-home aria-label="Home">✕</button><h1>${title}</h1><span class="muted">${right}</span></header>`;
 let screen = 0, onKey = null;
 
 document.addEventListener('keydown', e => { if (onKey && !e.metaKey && !e.ctrlKey && !e.altKey) onKey(e); });
 document.addEventListener('click', e => {
-  const s = e.target.closest('.spk');
-  if (s) { e.stopPropagation(); say(s.dataset.say); return; }
   if (e.target.closest('[data-home]')) home();
 }, true);
 
-let esVoice = null;
-const pickVoice = () => { const v = speechSynthesis.getVoices(); esVoice = v.find(x => /^es[-_](ES|MX|US)/i.test(x.lang)) || v.find(x => /^es/i.test(x.lang)) || null; };
-if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
-function say(t) {
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(t.replace(/_+/g, '...').replace(/\//g, ','));
-  u.lang = esVoice ? esVoice.lang : 'es-ES'; if (esVoice) u.voice = esVoice; u.rate = 0.9;
-  speechSynthesis.speak(u);
-}
 
 // Lenient typed-answer check: ignores case, punctuation, (notes), a leading "to ", accents and small typos.
 const stripAcc = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -206,7 +191,7 @@ function home() {
   <h2>Extra practice (optional)</h2>
   <div class="modes"><button class="mode" id="goGuide"><span class="ic">📖</span><b>Study guide</b><small>Everything on one page, for reference.</small></button></div>
   <div class="modes three">
-    <button class="mode focus" data-mod="time"><span class="ic">⏰</span><b>Telling time</b><small>The recipe, then endless clock drills, including listening.</small></button>
+    <button class="mode focus" data-mod="time"><span class="ic">⏰</span><b>Telling time</b><small>The recipe, then endless clock drills.</small></button>
     <button class="mode focus" data-mod="numbers"><span class="ic">🔢</span><b>Numbers to millions</b><small>How to build any number, memory tricks, then random drills.</small></button>
     <button class="mode focus" data-mod="serestar"><span class="ic">⚖️</span><b>Ser vs. estar</b><small>DOCTOR / PLACE, the trap questions, then a sentence drill.</small></button>
   </div>
@@ -226,7 +211,7 @@ function home() {
   </div>
   ${Object.entries(GROUPS).map(([g, name]) => `<button class="grp" data-grp="${g}">${esc(name)}</button>
   <div class="chips">${SECTIONS.filter(s => group(s) === g).map(s => `<button class="chip ${S.secs.includes(s) ? 'on' : ''}" data-sec="${esc(s)}">${esc(s.split(' · ').slice(1).join(' · '))} <small>${secStat(s)}</small></button>`).join('')}</div>`).join('')}
-  <p class="muted">Topics come from your Portales 2.0 Lessons 1–3 (midterm Mon 10/26). Tip: master Spanish → English first, then switch to English → Spanish so you can say it yourself. Tap 🔊 to hear the Spanish. Progress saves on this device.</p>
+  <p class="muted">Topics come from your Portales 2.0 Lessons 1–3 (midterm Mon 10/26). Tip: master Spanish → English first, then switch to English → Spanish so you can say it yourself. Progress saves on this device.</p>
   <button class="link" id="reset">Reset progress</button>`;
   $('goGuide').onclick = guide;
   $('goPath').onclick = () => pathStep(pathNext());
@@ -271,8 +256,8 @@ function flash(list) {
     app.innerHTML = `${topBar('Flashcards', `${i + 1} / ${cards.length}`)}
     <div class="bar"><i style="width:${i / cards.length * 100}%"></i></div>
     <div class="flip" id="card"><div class="inner">
-      <div class="face"><div class="txt">${esc(P(c))}</div>${es ? spk(c.es) : ''}<small class="hint">Tap card to flip</small></div>
-      <div class="face b"><div><div class="txt">${esc(A(c))}</div>${altLine(c)}</div>${es ? '' : spk(c.es)}</div>
+      <div class="face"><div class="txt">${esc(P(c))}</div><small class="hint">Tap card to flip</small></div>
+      <div class="face b"><div><div class="txt">${esc(A(c))}</div>${altLine(c)}</div></div>
     </div></div>
     <div class="sort"><button class="btn bad" id="no">✗ Still learning</button><button class="btn good" id="yes">✓ Know it</button></div>
     <p class="muted center keys">Space: flip · ←: still learning · →: know it · or swipe the card</p>`;
@@ -319,7 +304,7 @@ function learn() {
     const cs = selected(), m = cs.filter(c => level(c) >= 2).length;
     return `${topBar('Learn', `${m} / ${cs.length} mastered`)}<div class="bar"><i style="width:${m / cs.length * 100}%"></i></div>`;
   };
-  const qbox = (c, label) => `<div class="q"><div class="label">${label}</div><div class="txt">${esc(P(c))}</div>${esFirst(c) ? spk(c.es) : ''}</div>`;
+  const qbox = (c, label) => `<div class="q"><div class="label">${label}</div><div class="txt">${esc(P(c))}</div></div>`;
   const newRound = () => {
     const pool = selected().filter(c => level(c) < 2);
     if (!pool.length) return finished();
@@ -355,7 +340,7 @@ function learn() {
         onKey = null;
       } else {
         miss(c); setLevel(c, 0);
-        $('foot').innerHTML = `<div class="res bad"><div>${k < 0 ? "Here's the answer:" : 'Not quite. The answer is:'} <b>${esc(ans)}</b>${spk(c.es, 'inline')}</div>
+        $('foot').innerHTML = `<div class="res bad"><div>${k < 0 ? "Here's the answer:" : 'Not quite. The answer is:'} <b>${esc(ans)}</b></div>
           <div class="between"><span class="muted">You'll see this again.</span><button class="btn" id="cont">Continue</button></div></div>`;
         $('cont').onclick = next;
         onKey = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); next(); } };
@@ -389,7 +374,7 @@ function learn() {
       onKey = e => { if (e.key === 'Enter') { e.preventDefault(); next(); } };
       if (g.ok) {
         hit(c); setLevel(c, 2);
-        $('foot').innerHTML = `<div class="res good"><b>✓ ${praise()}</b>${g.note ? `<div>${g.note}: <b>${esc(g.a)}</b>${spk(c.es, 'inline')}</div>
+        $('foot').innerHTML = `<div class="res good"><b>✓ ${praise()}</b>${g.note ? `<div>${g.note}: <b>${esc(g.a)}</b></div>
           <div class="between"><span></span><button class="btn good" id="cont">Continue</button></div>` : ''}</div>`;
         if (g.note) $('cont').onclick = next;
         else setTimeout(() => { if (my === screen) next(); }, 800);
@@ -398,7 +383,7 @@ function learn() {
       miss(c); setLevel(c, 1);
       $('foot').innerHTML = `<div class="res bad">
         ${typed == null ? "<b>Here's the answer</b>" : `<b>Not quite</b><div>You typed: <s>${esc(typed)}</s></div>`}
-        <div>Correct: <b>${esc(ans)}</b>${spk(c.es, 'inline')}</div>${altLine(c)}
+        <div>Correct: <b>${esc(ans)}</b></div>${altLine(c)}
         <div class="between">${typed == null ? '<span></span>' : '<button class="link" id="ov">Override: I was right</button>'}<button class="btn" id="cont">Continue</button></div></div>`;
       $('cont').onclick = next;
       if (typed != null) $('ov').onclick = () => {
@@ -443,7 +428,6 @@ function learn() {
 const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 const pickOne = a => a[Math.random() * a.length | 0];
 const pad = m => String(m).padStart(2, '0');
-const hasTTS = 'speechSynthesis' in window;
 
 const UNITS = 'cero uno dos tres cuatro cinco seis siete ocho nueve diez once doce trece catorce quince dieciséis diecisiete dieciocho diecinueve veinte veintiuno veintidós veintitrés veinticuatro veinticinco veintiséis veintisiete veintiocho veintinueve'.split(' ');
 const TENS = ['', '', '', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
@@ -474,10 +458,7 @@ function numWhy(n) {
   return tips.join(' · ');
 }
 const numSay = n => ({label: 'Write this number in Spanish', q: fmtEs(n), sub: n >= 1000 ? `in English: ${n.toLocaleString('en-US')}` : '',
-  show: numEs(n), sayAns: numEs(n), check: v => normWords(v) === normWords(numEs(n)), why: numWhy(n)});
-const numHear = n => ({label: hasTTS ? 'Listen, then type the number in digits' : 'Read it, then type the number in digits',
-  q: hasTTS ? '🔊 Tap the speaker to hear it again' : numEs(n), say: numEs(n), autoSay: true, digits: true,
-  show: `${fmtEs(n)} = ${numEs(n)}`, sayAns: numEs(n), check: v => v.replace(/\D/g, '') === String(n), why: numWhy(n)});
+  show: numEs(n), check: v => normWords(v) === normWords(numEs(n)), why: numWhy(n)});
 const year = () => rnd(1950, 2030);
 
 // Time: every accepted way to say h:m (h 1–12), with the "menos" form from :31 on.
@@ -500,7 +481,7 @@ function timeWhy(h, m) {
 const period = h24 => h24 < 12 ? 'de la mañana' : h24 < 20 ? 'de la tarde' : 'de la noche';
 const clockItem = (h, m) => {
   const f = timeForms(h, m);
-  return {label: 'How do you say this time?', q: `${h}:${pad(m)}`, show: f.all[0], sayAns: f.all[0], also: f.all.slice(1).join(' · '),
+  return {label: 'How do you say this time?', q: `${h}:${pad(m)}`, show: f.all[0], also: f.all.slice(1).join(' · '),
     check: v => f.all.some(a => normWords(a) === normWords(v)), why: timeWhy(h, m)};
 };
 const minute5 = () => rnd(0, 11) * 5;
@@ -514,7 +495,7 @@ const TIME_LEVELS = [
     const all = [...f.y.map(a => `${a} ${p}`), ...f.menos.flatMap(a => [`${a} ${p}`, `${a} ${p2}`])];
     if (h24 === 12 && m === 0) all.unshift('Es mediodía');
     const sorted = m >= 40 ? [...all.filter(a => a.includes('menos')), ...all.filter(a => !a.includes('menos'))] : all;
-    return {label: 'Say it with the time of day', q: `${h}:${pad(m)} ${h24 < 12 ? 'a.m.' : 'p.m.'}`, show: sorted[0], sayAns: sorted[0],
+    return {label: 'Say it with the time of day', q: `${h}:${pad(m)} ${h24 < 12 ? 'a.m.' : 'p.m.'}`, show: sorted[0],
       also: [...new Set(sorted.slice(1))].join(' · '), check: v => all.some(a => normWords(a) === normWords(v)),
       why: [timeWhy(h, m), `${h24 < 12 ? 'morning' : h24 < 20 ? 'afternoon' : 'night'} → ${p}`].filter(Boolean).join(' · ')};
   }},
@@ -522,15 +503,9 @@ const TIME_LEVELS = [
     const ev = pickOne(['la clase de español', 'el examen', 'la prueba', 'el laboratorio', 'la cena']), h = rnd(1, 12), m = pickOne([0, 15, 30, 45, minute5()]);
     const at = timeForms(h, m).all.map(a => a.replace(/^Es la/, 'a la').replace(/^Son las/, 'a las'));
     const full = at.map(a => `${ev[0].toUpperCase() + ev.slice(1)} es ${a}`);
-    return {label: 'Answer the question', q: `¿A qué hora es ${ev}? (${h}:${pad(m)})`, say: `¿A qué hora es ${ev}?`, show: full[0] + '.', sayAns: full[0],
+    return {label: 'Answer the question', q: `¿A qué hora es ${ev}? (${h}:${pad(m)})`, show: full[0] + '.',
       also: at[0][0].toUpperCase() + at[0].slice(1) + '.', check: v => [...at, ...full].some(a => normWords(a) === normWords(v)),
       why: '"¿Qué hora es?" asks what time it is now. "¿A qué hora…?" asks at what time, so answer with "a las…" (or "a la una")'};
-  }},
-  {name: '6 · Listening', desc: 'Hear the time, type it in digits like 8:45', gen: () => {
-    const h = rnd(1, 12), m = minute5(), said = pickOne(timeForms(h, m).all);
-    return {label: hasTTS ? 'Listen, then type the time like 8:45' : 'Read it, then type the time like 8:45', q: hasTTS ? '🔊 Tap the speaker to hear it again' : said,
-      say: said, autoSay: true, digits: true, show: `${h}:${pad(m)} = ${said}`, sayAns: said,
-      ph: 'Like 8:45 (or just 845)', check: v => [`${h}${pad(m)}`, m ? '' : `${h}`].includes(v.replace(/\D/g, '').replace(/^0+/, '')), why: timeWhy(h, m)};
   }},
 ];
 const NUM_LEVELS = [
@@ -541,7 +516,6 @@ const NUM_LEVELS = [
   {name: '5 · 10.000–99.999', desc: 'diez mil, cuarenta y cinco mil…', gen: () => numSay(Math.random() < .4 ? rnd(10, 99) * 1000 : rnd(10000, 99999))},
   {name: '6 · 100.000–999.999', desc: 'cien mil, quinientos mil…', gen: () => numSay(Math.random() < .4 ? rnd(100, 999) * 1000 : rnd(100000, 999999))},
   {name: '7 · Millions', desc: 'un millón, dos millones…', gen: () => numSay(Math.random() < .5 ? rnd(1, 30) * 1e6 : rnd(1, 9) * 1e6 + rnd(1, 999) * 1000)},
-  {name: '8 · Listening (all sizes)', desc: 'Hear a number, type the digits', gen: () => numHear(pickOne([rnd(0, 30), rnd(31, 99), rnd(100, 999), year(), rnd(1000, 99999), rnd(10, 999) * 1000, rnd(1, 9) * 1e6]))},
 ];
 
 // Ser vs. estar sentences: [sentence, ser form, estar form, answer, why]
@@ -589,8 +563,8 @@ const seItem = typed => {
   const [s, sf, ef, ans, why] = pickOne(SE), right = ans === 'ser' ? sf : ef, full = s.replace('___', right);
   const choices = shuffle([sf, ef]);
   return typed
-    ? {label: 'Type the right form of ser or estar', q: s, show: full, sayAns: full, check: v => [right, full].some(a => normWords(a) === normWords(v)), why}
-    : {label: 'Ser or estar?', q: s, choices, correct: choices.indexOf(right), show: full, sayAns: full, why};
+    ? {label: 'Type the right form of ser or estar', q: s, show: full, check: v => [right, full].some(a => normWords(a) === normWords(v)), why}
+    : {label: 'Ser or estar?', q: s, choices, correct: choices.indexOf(right), show: full, why};
 };
 const SE_LEVELS = [
   {name: '1 · Pick ser or estar', desc: 'Tap the right form', gen: () => seItem(false)},
@@ -622,7 +596,6 @@ const NUM_LESSON = `
 <tr><td>500.000</td><td>quinientos mil</td></tr><tr><td>1.000.000</td><td><b>un millón</b></td></tr><tr><td>2.000.000</td><td>dos <b>millones</b> (millón does take a plural)</td></tr></table>
 <p>💡 <b>The chunk trick:</b> Spanish writes 45.678 with dots where English uses commas. Read the chunk before the dot, then say "mil" at the dot, then read the last chunk:<br>
 <b>45</b>.<b>678</b> → cuarenta y cinco <b>mil</b> seiscientos setenta y ocho<br><b>3</b>.<b>250</b>.<b>000</b> → tres <b>millones</b> doscientos cincuenta <b>mil</b></p>
-<p>💡 <b>Listening trick:</b> listen for <b>mil</b> and <b>millones</b>. Everything said before "mil" is the thousands chunk.</p>
 <h3>Step 7 · Small traps</h3>
 <ul><li><b>uno → un</b> before a noun, mil or millones: un libro, <b>veintiún</b> años, treinta y <b>un</b> mil, veintiún mil.</li>
 <li>Before a noun, millón and millones take <b>de</b>: <i>un millón <b>de</b> dólares</i> (but <i>dos mil dólares</i>, with no de).</li>
@@ -700,7 +673,7 @@ function drill(cfg) {
     app.innerHTML = `${topBar(cfg.title)}<section class="panel center"><div class="big">${good ? '🎉' : '💪'}</div><h2>${right} / ${cfg.n} right</h2>
       <p class="muted">${good ? (cfg.next ? 'Nice. On to the next step.' : 'Nice. Go to the next level.') : cfg.next ? 'Do one more round if you have time. Otherwise keep going, and the end screen will list what to redo.' : 'Run it once more, then move on.'}</p>
       <div class="stack">${cfg.next ? `<button class="btn" id="nx">${esc(cfg.nextName)} →</button><button class="btn ghost" id="again">Another round</button>` : '<button class="btn" id="again">Another round</button>'}<button class="btn ghost" id="back">Back to ${esc(cfg.backName)}</button></div></section>
-      ${missed.length ? `<ul class="review">${missed.map(m => `<li class="no"><b>${esc(m.q.startsWith('🔊') ? m.show.split(' = ')[0] : m.q)}</b><span>${esc(m.show)}</span></li>`).join('')}</ul>` : ''}`;
+      ${missed.length ? `<ul class="review">${missed.map(m => `<li class="no"><b>${esc(m.q)}</b><span>${esc(m.show)}</span></li>`).join('')}</ul>` : ''}`;
     $('again').onclick = again;
     if (cfg.next) { $('nx').onclick = cfg.next; onKey = e => { if (e.key === 'Enter') cfg.next(); }; }
     $('back').onclick = () => { cfg.back(); $('practice')?.scrollIntoView(); };
@@ -709,13 +682,12 @@ function drill(cfg) {
     if (i >= cfg.n) return done();
     const it = cfg.gen(), next = once(() => { i++; ask(); });
     app.innerHTML = `${topBar(cfg.title, `${i + 1} / ${cfg.n} · ${right} ✓`)}<div class="bar"><i style="width:${i / cfg.n * 100}%"></i></div>
-      <div class="q"><div class="label">${esc(it.label)}</div><div class="txt">${esc(it.q)}</div>${it.sub ? `<div class="muted">${esc(it.sub)}</div>` : ''}${it.say ? spk(it.say) : ''}</div>
+      <div class="q"><div class="label">${esc(it.label)}</div><div class="txt">${esc(it.q)}</div>${it.sub ? `<div class="muted">${esc(it.sub)}</div>` : ''}</div>
       ${it.choices ? `<div class="opts">${it.choices.map((c, k) => `<button class="opt"><span class="n">${k + 1}</span><span>${esc(c)}</span></button>`).join('')}</div>`
-        : `<form id="f" class="wf" autocomplete="off"><input id="inp" class="inp" placeholder="${it.ph || (it.digits ? 'Type the digits' : 'Type it in Spanish')}" inputmode="${it.digits ? 'decimal' : 'text'}" autocapitalize="off" autocorrect="off" spellcheck="false" lang="es">
-          ${it.digits ? '' : `<div class="acc">${[...'áéíóúñ¿¡'].map(ch => `<button type="button" class="ak">${ch}</button>`).join('')}</div>`}
+        : `<form id="f" class="wf" autocomplete="off"><input id="inp" class="inp" placeholder="Type it in Spanish" autocapitalize="off" autocorrect="off" spellcheck="false" lang="es">
+          <div class="acc">${[...'áéíóúñ¿¡'].map(ch => `<button type="button" class="ak">${ch}</button>`).join('')}</div>
           <div class="between"><button type="button" class="link" id="dk">Show me</button><button class="btn">Check</button></div></form>`}
       <div class="foot" id="foot"></div>`;
-    if (it.autoSay) say(it.say);
     const finish = (r, typed) => {
       const ok = !!r, note = typeof r === 'string' ? r : '';
       if (ok) right++; else missed.push(it);
@@ -723,7 +695,7 @@ function drill(cfg) {
       $('foot').innerHTML = `<div class="res ${ok ? 'good' : 'bad'}"><b>${ok ? '✓ ' + (note || praise()) : typed === null ? "Here's the answer" : 'Not quite'}</b>
         ${ok && note ? `<div>You typed: ${esc(typed)}</div>` : ''}
         ${!ok && typed ? `<div>You typed: <s>${esc(typed)}</s></div>` : ''}
-        <div>Answer: <b>${esc(it.show)}</b>${spk(it.sayAns, 'inline')}</div>
+        <div>Answer: <b>${esc(it.show)}</b></div>
         ${it.also ? `<div class="muted alt">Also correct: ${esc(it.also)}</div>` : ''}
         ${it.why ? `<div class="why">💡 ${esc(it.why)}</div>` : ''}
         <div class="between">${!ok && typed && it.self ? '<button class="link" id="mine">I wrote it another way. Count it right</button>' : '<span class="muted">Enter ↵</span>'}<button class="btn" id="cont">Next</button></div></div>`;
@@ -766,12 +738,10 @@ const sentCheck = answers => v => {
   const t = normS(v, false), best = Math.min(...answers.map(a => lev(t, normS(a, false)) / Math.max(1, normS(a, false).length)));
   return best <= 0.08 ? 'Close. Compare your spelling with the answer' : false;
 };
-const sentItem = ([en, ...es]) => ({label: 'Write it in Spanish (a full sentence)', q: en, show: es[0], sayAns: es[0], also: es.slice(1).join(' · '), check: sentCheck(es), self: true});
-const dictItem = ([en, ...es]) => ({label: hasTTS ? 'Listen, then type the Spanish you hear' : 'Copy the Spanish', q: hasTTS ? '🔊 Tap the speaker to hear it again' : es[0],
-  sub: hasTTS ? `Meaning: ${en}` : '', say: es[0], autoSay: true, show: es[0], sayAns: es[0], check: sentCheck([es[0]]), self: true});
-const mcq = (label, q, right, wrongs, why, show) => { const choices = shuffle([right, ...wrongs]); return {label, q, choices, correct: choices.indexOf(right), show: show || right, sayAns: show || right, why}; };
+const sentItem = ([en, ...es]) => ({label: 'Write it in Spanish (a full sentence)', q: en, show: es[0], also: es.slice(1).join(' · '), check: sentCheck(es), self: true});
+const mcq = (label, q, right, wrongs, why, show) => { const choices = shuffle([right, ...wrongs]); return {label, q, choices, correct: choices.indexOf(right), show: show || right, why}; };
 const pairGen = list => fromList(list, ([en, right, wrong, why]) => mcq('Which one is correct?', en, right, [wrong], why));
-const sents = list => [fromList(list, sentItem), fromList(list, sentItem), fromList(list, dictItem)];
+const sents = list => [fromList(list, sentItem)];
 
 const END = {ar: ['o', 'as', 'a', 'amos', 'an'], er: ['o', 'es', 'e', 'emos', 'en'], ir: ['o', 'es', 'e', 'imos', 'en']};
 const IRR = {ser: ['soy', 'eres', 'es', 'somos', 'son'], estar: ['estoy', 'estás', 'está', 'estamos', 'están'], tener: ['tengo', 'tienes', 'tiene', 'tenemos', 'tienen'], venir: ['vengo', 'vienes', 'viene', 'venimos', 'vienen']};
@@ -780,7 +750,7 @@ const ERIR = [['comer', 'eat'], ['correr', 'run'], ['leer', 'read'], ['aprender'
 const conjGen = verbs => () => {
   const [v, en] = pickOne(verbs), k = rnd(0, 4), s = pickOne([['yo'], ['tú'], ['él', 'ella', 'usted'], ['nosotros'], ['ellos', 'ellas', 'ustedes']][k]);
   const form = IRR[v] ? IRR[v][k] : v.slice(0, -2) + END[v.slice(-2)][k];
-  return {label: 'Conjugate the verb', q: `${s} + ${v}`, sub: `${v} = to ${en}`, show: `${s} ${form}`, sayAns: `${s} ${form}`, check: sentCheck([form, `${s} ${form}`]),
+  return {label: 'Conjugate the verb', q: `${s} + ${v}`, sub: `${v} = to ${en}`, show: `${s} ${form}`, check: sentCheck([form, `${s} ${form}`]),
     why: IRR[v] ? `${v} is irregular: ${IRR[v].join(', ')}` : `-${v.slice(-2)} endings: ${END[v.slice(-2)].map(e => '-' + e).join(', ')}`};
 };
 const IRRV = [['ser', 'be'], ['estar', 'be'], ['tener', 'have'], ['venir', 'come']];
@@ -954,9 +924,9 @@ const STEPS = [
     <li>Plurals: add -s after a vowel (libros), -es after a consonant (profesores). lápiz → lápi<b>ces</b>; lección → lecciones (the accent goes away).</li>
     <li><b>hay</b> = there is / there are · <b>no hay</b> = there isn't / aren't · <b>¿Hay…?</b> = Is there…?</li></ul>`),
     gens: [fromList(P_NOUNS, ([n, a, why]) => mcq('el or la?', `___ ${n}`, a, [a === 'el' ? 'la' : 'el'], why, `${a} ${n}`)), fromList(P_HAY, sentItem)]},
-  {t: 'Numbers 0–100', tag: 'Lessons 1–2', lesson: NUM_LESSON.split('<h3>Step 5')[0], gens: [CUBE(0), CUBE(1), CUBE(1), () => numHear(rnd(0, 100))]},
-  {t: 'Numbers 100 to millions', tag: 'Lesson 2', lesson: '<h2>🔢 Big numbers</h2><h3>Step 5' + NUM_LESSON.split('<h3>Step 5')[1], gens: [CUBE(2), CUBE(3), CUBE(4), CUBE(5), CUBE(6), () => numHear(pickOne([rnd(100, 999), year(), rnd(1000, 99999), rnd(1, 9) * 1e6]))]},
-  {t: 'Telling time', tag: 'Lesson 1', lesson: TIME_LESSON, gens: [TL(0), TL(1), TL(2), TL(3), TL(5)]},
+  {t: 'Numbers 0–100', tag: 'Lessons 1–2', lesson: NUM_LESSON.split('<h3>Step 5')[0], gens: [CUBE(0), CUBE(1), CUBE(1)]},
+  {t: 'Numbers 100 to millions', tag: 'Lesson 2', lesson: '<h2>🔢 Big numbers</h2><h3>Step 5' + NUM_LESSON.split('<h3>Step 5')[1], gens: [CUBE(2), CUBE(3), CUBE(4), CUBE(5), CUBE(6)]},
+  {t: 'Telling time', tag: 'Lesson 1', lesson: TIME_LESSON, gens: [TL(0), TL(1), TL(2), TL(3)]},
   {t: 'Days, schedule and "at what time?"', tag: 'Lessons 1–2', lesson: L('📅 Days and your schedule', `<ul><li>lunes, martes, miércoles, jueves, viernes, sábado, domingo (no capital letters)</li>
     <li><b>el lunes</b> = on Monday (this one) · <b>los lunes</b> = on Mondays (every week). Never use "en" with days.</li>
     <li>¿Qué día es hoy? → Hoy es martes. · mañana = tomorrow</li>
